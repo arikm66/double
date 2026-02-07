@@ -1,4 +1,5 @@
 const Category = require('../models/Category');
+const Noun = require('../models/Noun');
 
 // Get all categories (paged)
 exports.getAllCategories = async (req, res) => {
@@ -111,6 +112,8 @@ exports.deleteCategory = async (req, res) => {
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });
     }
+
+    await Noun.deleteMany({ category: req.params.id });
 
     res.json({
       message: 'Category deleted successfully'

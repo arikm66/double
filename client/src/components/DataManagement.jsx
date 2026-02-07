@@ -250,6 +250,14 @@ function DataManagement() {
 
       if (response.ok) {
         resetCategories();
+        setNouns((prev) => {
+          const filtered = prev.filter((noun) => noun.category?._id !== id);
+          const removedCount = prev.length - filtered.length;
+          if (removedCount > 0) {
+            setNounsTotal((total) => Math.max(total - removedCount, 0));
+          }
+          return filtered;
+        });
       } else if (response.status === 403) {
         setError('Only admins can delete categories');
       } else {
