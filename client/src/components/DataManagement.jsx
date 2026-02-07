@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
 import './DataManagement.css';
 
 function DataManagement() {
@@ -324,16 +325,16 @@ function DataManagement() {
 
   return (
     <div className="data-management-container">
-      <div className="data-header">
-        <button className="back-button" onClick={() => navigate('/manage')}>
-          ← Back to Manage
-        </button>
-        <h1>Data Management</h1>
-      </div>
+      <Navbar />
 
-      <div className="data-content">
-        {error && <div className="error-banner">{error}</div>}
-        
+      <div className="data-sticky">
+        <div className="data-header">
+          <button className="back-button" onClick={() => navigate('/manage')}>
+            ← Back to Manage
+          </button>
+          <h1>Data Management</h1>
+        </div>
+
         <div className="tabs">
           <button 
             className={`tab-button ${activeTab === 'categories' ? 'active' : ''}`}
@@ -348,6 +349,10 @@ function DataManagement() {
             Nouns ({nounsTotal || nouns.length})
           </button>
         </div>
+      </div>
+
+      <div className="data-content">
+        {error && <div className="error-banner">{error}</div>}
 
         {activeTab === 'categories' && (
           <div className="tab-content">

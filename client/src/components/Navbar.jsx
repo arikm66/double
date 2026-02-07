@@ -15,7 +15,13 @@ function Navbar() {
     <nav className="navbar">
       <div className="navbar-main">
         <div className="navbar-brand">
-          <h2>Double</h2>
+          <button
+            type="button"
+            className="navbar-brand-button"
+            onClick={() => navigate('/dashboard')}
+          >
+            Double Cards Game
+          </button>
         </div>
         <div className="navbar-links">
           <NavLink

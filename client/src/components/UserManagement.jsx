@@ -135,7 +135,7 @@ function UserManagement() {
     <div className="user-management-container">
       <Navbar />
 
-      <div className="user-management-content">
+      <div className="user-sticky">
         <div className="user-management-header">
           <button className="back-button" onClick={() => navigate('/manage')}>
             ← Back to Manage
@@ -145,7 +145,9 @@ function UserManagement() {
             + Add User
           </button>
         </div>
+      </div>
 
+      <div className="user-management-content">
         {error && <div className="error-banner">{error}</div>}
 
         <div className="user-management-card">
