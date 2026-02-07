@@ -18,7 +18,7 @@
 }
 
 .user-management-content {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
   padding: calc(30px + var(--user-sticky-offset)) 0 0;
@@ -66,6 +66,13 @@
   transform: translateY(-2px);
 }
 
+.header-buttons {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+  align-items: center;
+}
+
 .primary-button {
   padding: 10px 20px;
   background: white;
@@ -76,7 +83,6 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  margin-left: auto;
 }
 
 .primary-button:hover {
@@ -85,13 +91,68 @@
   transform: translateY(-2px);
 }
 
+.restore-button {
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.restore-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: white;
+  transform: translateY(-2px);
+}
+
 .error-banner {
+  position: fixed;
+  top: 200px;
+  left: 50%;
+  transform: translateX(-50%);
   background: #fee;
   color: #c33;
-  padding: 15px;
-  border-radius: 5px;
-  margin-bottom: 20px;
+  padding: 15px 30px;
+  border-radius: 8px;
   text-align: center;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #fcc;
+  max-width: 600px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.success-banner {
+  position: fixed;
+  top: 200px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #d4edda;
+  color: #155724;
+  padding: 15px 30px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #c3e6cb;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-width: 600px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .data-table {

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
+import ConfirmDialog from './ConfirmDialog';
 import './DataManagement.css';
 
 function DataManagement() {
@@ -31,6 +32,9 @@ function DataManagement() {
   const [editingNoun, setEditingNoun] = useState(null);
   const [categoryForm, setCategoryForm] = useState({ categoryHe: '' });
   const [nounForm, setNounForm] = useState({ nameEn: '', nameHe: '', category: '' });
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [deleteAction, setDeleteAction] = useState(null);
+  const [deleteMessage, setDeleteMessage] = useState('');
   const categoriesLoadMoreRef = useRef(null);
   const nounsLoadMoreRef = useRef(null);
 
@@ -233,13 +237,24 @@ function DataManagement() {
     setLoading(false);
   };
 
-  const handleDeleteCategory = async (id) => {
+  const handleDeleteCategory = (id) => {
     if (!isAdmin) {
       setError('Only admins can delete categories');
       return;
     }
-    if (!window.confirm('Are you sure you want to delete this category?')) return;
     
+    const skipConfirmation = localStorage.getItem('skipDeleteConfirmation') === 'true';
+    
+    if (skipConfirmation) {
+      performDeleteCategory(id);
+    } else {
+      setDeleteMessage('Are you sure you want to delete this category?');
+      setDeleteAction(() => () => performDeleteCategory(id));
+      setShowConfirmDialog(true);
+    }
+  };
+
+  const performDeleteCategory = async (id) => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/categories/${id}`, {
@@ -269,13 +284,24 @@ function DataManagement() {
     }
   };
 
-  const handleDeleteNoun = async (id) => {
+  const handleDeleteNoun = (id) => {
     if (!isAdmin) {
       setError('Only admins can delete nouns');
       return;
     }
-    if (!window.confirm('Are you sure you want to delete this noun?')) return;
     
+    const skipConfirmation = localStorage.getItem('skipDeleteConfirmation') === 'true';
+    
+    if (skipConfirmation) {
+      performDeleteNoun(id);
+    } else {
+      setDeleteMessage('Are you sure you want to delete this noun?');
+      setDeleteAction(() => () => performDeleteNoun(id));
+      setShowConfirmDialog(true);
+    }
+  };
+
+  const performDeleteNoun = async (id) => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/nouns/${id}`, {
@@ -295,6 +321,19 @@ function DataManagement() {
     } catch (err) {
       setError('Error deleting noun');
     }
+  };
+
+  const handleConfirmDelete = () => {
+    setShowConfirmDialog(false);
+    if (deleteAction) {
+      deleteAction();
+      setDeleteAction(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowConfirmDialog(false);
+    setDeleteAction(null);
   };
 
   const openCategoryModal = (category = null) => {
@@ -556,6 +595,14 @@ function DataManagement() {
             </form>
           </div>
         </div>
+      )}
+
+      {showConfirmDialog && (
+        <ConfirmDialog
+          message={deleteMessage}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
+import ConfirmDialog from './ConfirmDialog';
 import './UserManagement.css';
 
 function UserManagement() {
@@ -8,8 +9,11 @@ function UserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -107,9 +111,18 @@ function UserManagement() {
     setLoading(false);
   };
 
-  const handleDelete = async (userId) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
+  const handleDelete = (userId) => {
+    const skipConfirmation = localStorage.getItem('skipDeleteConfirmation') === 'true';
+    
+    if (skipConfirmation) {
+      performDelete(userId);
+    } else {
+      setUserToDelete(userId);
+      setShowConfirmDialog(true);
+    }
+  };
 
+  const performDelete = async (userId) => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
@@ -131,6 +144,26 @@ function UserManagement() {
     }
   };
 
+  const handleConfirmDelete = () => {
+    setShowConfirmDialog(false);
+    if (userToDelete) {
+      performDelete(userToDelete);
+      setUserToDelete(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowConfirmDialog(false);
+    setUserToDelete(null);
+  };
+
+  const handleRestoreDefaults = () => {
+    localStorage.removeItem('skipDeleteConfirmation');
+    setError('');
+    setSuccessMessage('Delete confirmations restored! You will be asked for confirmation on future deletions.');
+    setTimeout(() => setSuccessMessage(''), 4000);
+  };
+
   return (
     <div className="user-management-container">
       <Navbar />
@@ -141,14 +174,20 @@ function UserManagement() {
             ← Back to Manage
           </button>
           <h1>User Management</h1>
-          <button className="primary-button" onClick={openCreateModal}>
-            + Add User
-          </button>
+          <div className="header-buttons">
+            <button className="restore-button" onClick={handleRestoreDefaults} title="Restore delete confirmation prompts">
+              🔄 Restore Confirmations
+            </button>
+            <button className="primary-button" onClick={openCreateModal}>
+              + Add User
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="user-management-content">
         {error && <div className="error-banner">{error}</div>}
+        {successMessage && <div className="success-banner">{successMessage}</div>}
 
         <div className="user-management-card">
           {loading && <div className="loading-row">Loading users...</div>}
@@ -254,6 +293,14 @@ function UserManagement() {
             </form>
           </div>
         </div>
+      )}
+
+      {showConfirmDialog && (
+        <ConfirmDialog
+          message="Are you sure you want to delete this user?"
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
       )}
     </div>
   );

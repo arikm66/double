@@ -4,9 +4,22 @@ const bcrypt = require('bcryptjs');
 // Get all users (admin only)
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find()
-      .select('-password')
-      .sort({ username: 1, _id: 1 });
+    const roleOrder = ['admin', 'therapist', 'player'];
+
+    const users = await User.aggregate([
+      {
+        $addFields: {
+          roleOrderIndex: { $indexOfArray: [roleOrder, '$role'] }
+        }
+      },
+      { $sort: { roleOrderIndex: 1, username: 1, _id: 1 } },
+      {
+        $project: {
+          password: 0,
+          roleOrderIndex: 0
+        }
+      }
+    ]);
 
     res.json({ users, count: users.length });
   } catch (error) {
