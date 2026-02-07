@@ -1,10 +1,30 @@
 const Category = require('../models/Category');
 
-// Get all categories
+// Get all categories (paged)
 exports.getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find();
-    res.json({ categories, count: categories.length });
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 200);
+    const skip = (page - 1) * limit;
+
+    const [categories, total] = await Promise.all([
+      Category.find()
+        .sort({ categoryHe: 1, _id: 1 })
+        .skip(skip)
+        .limit(limit),
+      Category.countDocuments()
+    ]);
+
+    const hasMore = skip + categories.length < total;
+
+    res.json({
+      categories,
+      count: categories.length,
+      total,
+      page,
+      limit,
+      hasMore
+    });
   } catch (error) {
     console.error('Get categories error:', error);
     res.status(500).json({ 

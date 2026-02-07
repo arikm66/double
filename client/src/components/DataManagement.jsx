@@ -1,14 +1,24 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './DataManagement.css';
 
 function DataManagement() {
-  const { user } = useAuth();
+  const CATEGORIES_PAGE_SIZE = 50;
+  const NOUNS_PAGE_SIZE = 50;
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('categories');
   const [categories, setCategories] = useState([]);
+  const [categoriesTotal, setCategoriesTotal] = useState(0);
+  const [categoriesPage, setCategoriesPage] = useState(1);
+  const [categoriesHasMore, setCategoriesHasMore] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [categoriesLoadingMore, setCategoriesLoadingMore] = useState(false);
   const [nouns, setNouns] = useState([]);
+  const [nounsTotal, setNounsTotal] = useState(0);
+  const [nounsPage, setNounsPage] = useState(1);
+  const [nounsHasMore, setNounsHasMore] = useState(true);
+  const [nounsLoading, setNounsLoading] = useState(false);
+  const [nounsLoadingMore, setNounsLoadingMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -17,35 +27,132 @@ function DataManagement() {
   const [editingNoun, setEditingNoun] = useState(null);
   const [categoryForm, setCategoryForm] = useState({ categoryHe: '' });
   const [nounForm, setNounForm] = useState({ nameEn: '', nameHe: '', category: '' });
+  const categoriesLoadMoreRef = useRef(null);
+  const nounsLoadMoreRef = useRef(null);
 
   useEffect(() => {
-    fetchCategories();
-    fetchNouns();
+    fetchCategories(1, true);
+    fetchNouns(1, true);
   }, []);
 
-  const fetchCategories = async () => {
-    setLoading(true);
+  const fetchCategories = useCallback(async (page = 1, replace = false) => {
+    const isFirstPage = page === 1;
+    if (isFirstPage) {
+      setCategoriesLoading(true);
+    } else {
+      setCategoriesLoadingMore(true);
+    }
+
     try {
-      const response = await fetch('http://localhost:5000/api/categories');
+      const response = await fetch(
+        `http://localhost:5000/api/categories?page=${page}&limit=${CATEGORIES_PAGE_SIZE}`
+      );
       const data = await response.json();
-      setCategories(data.categories || []);
+      const newCategories = data.categories || [];
+
+      setCategoriesTotal(typeof data.total === 'number' ? data.total : newCategories.length);
+      setCategoriesHasMore(Boolean(data.hasMore));
+      setCategoriesPage(page);
+      setCategories((prev) => (replace ? newCategories : [...prev, ...newCategories]));
     } catch (err) {
       setError('Failed to fetch categories');
     }
-    setLoading(false);
-  };
 
-  const fetchNouns = async () => {
-    setLoading(true);
+    if (isFirstPage) {
+      setCategoriesLoading(false);
+    } else {
+      setCategoriesLoadingMore(false);
+    }
+  }, [CATEGORIES_PAGE_SIZE]);
+
+  const fetchNouns = useCallback(async (page = 1, replace = false) => {
+    const isFirstPage = page === 1;
+    if (isFirstPage) {
+      setNounsLoading(true);
+    } else {
+      setNounsLoadingMore(true);
+    }
+
     try {
-      const response = await fetch('http://localhost:5000/api/nouns');
+      const response = await fetch(
+        `http://localhost:5000/api/nouns?page=${page}&limit=${NOUNS_PAGE_SIZE}`
+      );
       const data = await response.json();
-      setNouns(data.nouns || []);
+      const newNouns = data.nouns || [];
+
+      setNounsTotal(typeof data.total === 'number' ? data.total : newNouns.length);
+      setNounsHasMore(Boolean(data.hasMore));
+      setNounsPage(page);
+      setNouns((prev) => (replace ? newNouns : [...prev, ...newNouns]));
     } catch (err) {
       setError('Failed to fetch nouns');
     }
-    setLoading(false);
+
+    if (isFirstPage) {
+      setNounsLoading(false);
+    } else {
+      setNounsLoadingMore(false);
+    }
+  }, [NOUNS_PAGE_SIZE]);
+
+  const resetNouns = () => {
+    setNouns([]);
+    setNounsPage(1);
+    setNounsHasMore(true);
+    fetchNouns(1, true);
   };
+
+  const resetCategories = () => {
+    setCategories([]);
+    setCategoriesPage(1);
+    setCategoriesHasMore(true);
+    fetchCategories(1, true);
+  };
+
+  useEffect(() => {
+    if (activeTab !== 'categories') return;
+    if (!categoriesLoadMoreRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry.isIntersecting) return;
+        if (!categoriesHasMore || categoriesLoading || categoriesLoadingMore) return;
+        fetchCategories(categoriesPage + 1);
+      },
+      { rootMargin: '200px' }
+    );
+
+    observer.observe(categoriesLoadMoreRef.current);
+
+    return () => observer.disconnect();
+  }, [
+    activeTab,
+    categoriesHasMore,
+    categoriesLoading,
+    categoriesLoadingMore,
+    categoriesPage,
+    fetchCategories
+  ]);
+
+  useEffect(() => {
+    if (activeTab !== 'nouns') return;
+    if (!nounsLoadMoreRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry.isIntersecting) return;
+        if (!nounsHasMore || nounsLoading || nounsLoadingMore) return;
+        fetchNouns(nounsPage + 1);
+      },
+      { rootMargin: '200px' }
+    );
+
+    observer.observe(nounsLoadMoreRef.current);
+
+    return () => observer.disconnect();
+  }, [activeTab, fetchNouns, nounsHasMore, nounsLoading, nounsLoadingMore, nounsPage]);
 
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
@@ -66,7 +173,7 @@ function DataManagement() {
       });
 
       if (response.ok) {
-        fetchCategories();
+        resetCategories();
         setShowCategoryModal(false);
         setCategoryForm({ categoryHe: '' });
         setEditingCategory(null);
@@ -98,7 +205,7 @@ function DataManagement() {
       });
 
       if (response.ok) {
-        fetchNouns();
+        resetNouns();
         setShowNounModal(false);
         setNounForm({ nameEn: '', nameHe: '', category: '' });
         setEditingNoun(null);
@@ -124,7 +231,7 @@ function DataManagement() {
       });
 
       if (response.ok) {
-        fetchCategories();
+        resetCategories();
       } else {
         setError('Failed to delete category');
       }
@@ -146,7 +253,7 @@ function DataManagement() {
       });
 
       if (response.ok) {
-        fetchNouns();
+        resetNouns();
       } else {
         setError('Failed to delete noun');
       }
@@ -198,13 +305,13 @@ function DataManagement() {
             className={`tab-button ${activeTab === 'categories' ? 'active' : ''}`}
             onClick={() => setActiveTab('categories')}
           >
-            Categories ({categories.length})
+            Categories ({categoriesTotal || categories.length})
           </button>
           <button 
             className={`tab-button ${activeTab === 'nouns' ? 'active' : ''}`}
             onClick={() => setActiveTab('nouns')}
           >
-            Nouns ({nouns.length})
+            Nouns ({nounsTotal || nouns.length})
           </button>
         </div>
 
@@ -218,6 +325,7 @@ function DataManagement() {
             </div>
             
             <div className="data-table">
+              {categoriesLoading && <div className="loading-row">Loading categories...</div>}
               <table>
                 <thead>
                   <tr>
@@ -245,8 +353,17 @@ function DataManagement() {
                       </td>
                     </tr>
                   ))}
+                  {!categoriesLoading && categories.length === 0 && (
+                    <tr>
+                      <td colSpan="2" className="empty-row">No categories found.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
+              <div className="load-more" ref={categoriesLoadMoreRef}>
+                {categoriesLoadingMore && <span>Loading more...</span>}
+                {!categoriesHasMore && categories.length > 0 && <span>End of list</span>}
+              </div>
             </div>
           </div>
         )}
@@ -261,6 +378,7 @@ function DataManagement() {
             </div>
             
             <div className="data-table">
+              {nounsLoading && <div className="loading-row">Loading nouns...</div>}
               <table>
                 <thead>
                   <tr>
@@ -292,8 +410,17 @@ function DataManagement() {
                       </td>
                     </tr>
                   ))}
+                  {!nounsLoading && nouns.length === 0 && (
+                    <tr>
+                      <td colSpan="4" className="empty-row">No nouns found.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
+              <div className="load-more" ref={nounsLoadMoreRef}>
+                {nounsLoadingMore && <span>Loading more...</span>}
+                {!nounsHasMore && nouns.length > 0 && <span>End of list</span>}
+              </div>
             </div>
           </div>
         )}

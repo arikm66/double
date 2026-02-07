@@ -1,10 +1,31 @@
 const Noun = require('../models/Noun');
 
-// Get all nouns
+// Get all nouns (paged)
 exports.getAllNouns = async (req, res) => {
   try {
-    const nouns = await Noun.find().populate('category', 'categoryHe');
-    res.json({ nouns, count: nouns.length });
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 200);
+    const skip = (page - 1) * limit;
+
+    const [nouns, total] = await Promise.all([
+      Noun.find()
+        .sort({ nameEn: 1, _id: 1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('category', 'categoryHe'),
+      Noun.countDocuments()
+    ]);
+
+    const hasMore = skip + nouns.length < total;
+
+    res.json({
+      nouns,
+      count: nouns.length,
+      total,
+      page,
+      limit,
+      hasMore
+    });
   } catch (error) {
     console.error('Get nouns error:', error);
     res.status(500).json({ 
