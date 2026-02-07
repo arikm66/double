@@ -5,6 +5,8 @@ import './Manage.css';
 
 function Manage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   return (
     <div className="manage-container">
@@ -15,11 +17,18 @@ function Manage() {
         <p>This is the manage section where you can manage your resources.</p>
         
         <div className="manage-grid">
-          <div className="manage-card">
-            <h3>Users</h3>
-            <p>Manage user accounts and permissions</p>
-            <button className="manage-card-button">View Users</button>
-          </div>
+          {isAdmin && (
+            <div className="manage-card">
+              <h3>Users</h3>
+              <p>Manage user accounts</p>
+              <button 
+                className="manage-card-button"
+                onClick={() => navigate('/user-management')}
+              >
+                View Users
+              </button>
+            </div>
+          )}
           
           <div className="manage-card">
             <h3>Settings</h3>

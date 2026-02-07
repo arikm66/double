@@ -74,6 +74,14 @@
   box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
+.manage-card-button:disabled {
+  background: #d8d8d8;
+  color: #888;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
 .manage-card-button:active {
   transform: translateY(0);
 }

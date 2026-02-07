@@ -20,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 const authRoutes = require('./routes/auth');
 const nounRoutes = require('./routes/nouns');
 const categoryRoutes = require('./routes/categories');
+const userRoutes = require('./routes/users');
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the API' });
@@ -32,6 +33,7 @@ app.get('/api/test', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/nouns', nounRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/users', userRoutes);
 
 // Start server
 app.listen(PORT, () => {

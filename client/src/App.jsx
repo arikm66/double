@@ -5,7 +5,9 @@ import Register from './components/Register'
 import Dashboard from './components/Dashboard'
 import Manage from './components/Manage'
 import DataManagement from './components/DataManagement'
+import UserManagement from './components/UserManagement'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 import './App.css'
 
 function App() {
@@ -61,6 +63,14 @@ function App() {
           <ProtectedRoute>
             <DataManagement />
           </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/user-management" 
+        element={
+          <AdminRoute>
+            <UserManagement />
+          </AdminRoute>
         } 
       />
     </Routes>
