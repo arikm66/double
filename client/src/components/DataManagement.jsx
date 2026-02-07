@@ -1,11 +1,14 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import './DataManagement.css';
 
 function DataManagement() {
   const CATEGORIES_PAGE_SIZE = 50;
   const NOUNS_PAGE_SIZE = 50;
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const isAdmin = user?.role === 'admin';
   const [activeTab, setActiveTab] = useState('categories');
   const [categories, setCategories] = useState([]);
   const [categoriesTotal, setCategoriesTotal] = useState(0);
@@ -108,6 +111,17 @@ function DataManagement() {
     setCategoriesHasMore(true);
     fetchCategories(1, true);
   };
+
+  const sortedNouns = useMemo(() => {
+    const getCategoryName = (noun) => noun.category?.categoryHe || '';
+    return [...nouns].sort((a, b) => {
+      const categoryCompare = getCategoryName(a).localeCompare(getCategoryName(b), 'he');
+      if (categoryCompare !== 0) {
+        return categoryCompare;
+      }
+      return (a.nameHe || '').localeCompare(b.nameHe || '', 'he');
+    });
+  }, [nouns]);
 
   useEffect(() => {
     if (activeTab !== 'categories') return;
@@ -219,6 +233,10 @@ function DataManagement() {
   };
 
   const handleDeleteCategory = async (id) => {
+    if (!isAdmin) {
+      setError('Only admins can delete categories');
+      return;
+    }
     if (!window.confirm('Are you sure you want to delete this category?')) return;
     
     try {
@@ -232,6 +250,8 @@ function DataManagement() {
 
       if (response.ok) {
         resetCategories();
+      } else if (response.status === 403) {
+        setError('Only admins can delete categories');
       } else {
         setError('Failed to delete category');
       }
@@ -241,6 +261,10 @@ function DataManagement() {
   };
 
   const handleDeleteNoun = async (id) => {
+    if (!isAdmin) {
+      setError('Only admins can delete nouns');
+      return;
+    }
     if (!window.confirm('Are you sure you want to delete this noun?')) return;
     
     try {
@@ -254,6 +278,8 @@ function DataManagement() {
 
       if (response.ok) {
         resetNouns();
+      } else if (response.status === 403) {
+        setError('Only admins can delete nouns');
       } else {
         setError('Failed to delete noun');
       }
@@ -347,6 +373,8 @@ function DataManagement() {
                         <button 
                           onClick={() => handleDeleteCategory(category._id)}
                           className="delete-btn"
+                          disabled={!isAdmin}
+                          title={isAdmin ? 'Delete category' : 'Admin only'}
                         >
                           Delete
                         </button>
@@ -389,7 +417,7 @@ function DataManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {nouns.map(noun => (
+                  {sortedNouns.map(noun => (
                     <tr key={noun._id}>
                       <td>{noun.nameEn}</td>
                       <td>{noun.nameHe}</td>
@@ -404,6 +432,8 @@ function DataManagement() {
                         <button 
                           onClick={() => handleDeleteNoun(noun._id)}
                           className="delete-btn"
+                          disabled={!isAdmin}
+                          title={isAdmin ? 'Delete noun' : 'Admin only'}
                         >
                           Delete
                         </button>

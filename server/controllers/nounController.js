@@ -8,11 +8,38 @@ exports.getAllNouns = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const [nouns, total] = await Promise.all([
-      Noun.find()
-        .sort({ nameEn: 1, _id: 1 })
-        .skip(skip)
-        .limit(limit)
-        .populate('category', 'categoryHe'),
+      Noun.aggregate([
+        {
+          $lookup: {
+            from: 'categories',
+            localField: 'category',
+            foreignField: '_id',
+            as: 'category'
+          }
+        },
+        {
+          $unwind: {
+            path: '$category',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $addFields: {
+            sortCategory: { $ifNull: ['$category.categoryHe', ''] },
+            sortNameHe: { $ifNull: ['$nameHe', ''] }
+          }
+        },
+        { $sort: { sortCategory: 1, sortNameHe: 1, _id: 1 } },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          $project: {
+            nameEn: 1,
+            nameHe: 1,
+            category: { _id: '$category._id', categoryHe: '$category.categoryHe' }
+          }
+        }
+      ]),
       Noun.countDocuments()
     ]);
 

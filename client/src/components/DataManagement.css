@@ -179,6 +179,14 @@ tbody tr:hover {
   transition: all 0.2s;
 }
 
+.delete-btn:disabled {
+  background: #d8d8d8;
+  color: #888;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
 .edit-btn {
   background: #667eea;
   color: white;
