@@ -3,6 +3,8 @@ import { useAuth } from './context/AuthContext'
 import Login from './components/Login'
 import Register from './components/Register'
 import Dashboard from './components/Dashboard'
+import Manage from './components/Manage'
+import DataManagement from './components/DataManagement'
 import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
 
@@ -42,6 +44,22 @@ function App() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/manage" 
+        element={
+          <ProtectedRoute>
+            <Manage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/data-management" 
+        element={
+          <ProtectedRoute>
+            <DataManagement />
           </ProtectedRoute>
         } 
       />
