@@ -1,34 +1,14 @@
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
 import './Manage.css';
 
 function Manage() {
-  const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
 
   return (
     <div className="manage-container">
-      <nav className="navbar">
-        <div className="navbar-brand">
-          <h2>Manage</h2>
-        </div>
-        <div className="navbar-menu">
-          <button onClick={() => navigate('/dashboard')} className="nav-button">
-            Dashboard
-          </button>
-          <span className="navbar-user">
-            {user?.username}
-          </span>
-          <button onClick={handleLogout} className="logout-button">
-            Logout
-          </button>
-        </div>
-      </nav>
+      <Navbar />
       
       <div className="manage-content">
         <h1>Manage Section</h1>

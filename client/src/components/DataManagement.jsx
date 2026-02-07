@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './DataManagement.css';
 
 function DataManagement() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('categories');
   const [categories, setCategories] = useState([]);
@@ -45,11 +45,6 @@ function DataManagement() {
       setError('Failed to fetch nouns');
     }
     setLoading(false);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
   };
 
   const handleCategorySubmit = async (e) => {
@@ -188,23 +183,12 @@ function DataManagement() {
 
   return (
     <div className="data-management-container">
-      <nav className="navbar">
-        <div className="navbar-brand">
-          <h2>Data Management</h2>
-        </div>
-        <div className="navbar-menu">
-          <button onClick={() => navigate('/dashboard')} className="nav-button">
-            Dashboard
-          </button>
-          <button onClick={() => navigate('/manage')} className="nav-button">
-            Manage
-          </button>
-          <span className="navbar-user">{user?.username}</span>
-          <button onClick={handleLogout} className="logout-button">
-            Logout
-          </button>
-        </div>
-      </nav>
+      <div className="data-header">
+        <button className="back-button" onClick={() => navigate('/manage')}>
+          ← Back to Manage
+        </button>
+        <h1>Data Management</h1>
+      </div>
 
       <div className="data-content">
         {error && <div className="error-banner">{error}</div>}
