@@ -4,6 +4,7 @@ import Login from './components/Login'
 import Register from './components/Register'
 import Dashboard from './components/Dashboard'
 import Manage from './components/Manage'
+import Play from './components/Play'
 import DataManagement from './components/DataManagement'
 import UserManagement from './components/UserManagement'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -54,6 +55,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Manage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/play" 
+        element={
+          <ProtectedRoute>
+            <Play />
           </ProtectedRoute>
         } 
       />

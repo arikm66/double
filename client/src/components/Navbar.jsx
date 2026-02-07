@@ -36,6 +36,12 @@ function Navbar() {
           >
             Manage
           </NavLink>
+          <NavLink
+            to="/play"
+            className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+          >
+            Play
+          </NavLink>
         </div>
         <div className="navbar-actions">
           <span className="navbar-user">{user?.username}</span>
