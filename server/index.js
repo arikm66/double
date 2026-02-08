@@ -3,6 +3,14 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+// Initialize Firebase
+const { initializeFirebase } = require('./config/firebase');
+try {
+  initializeFirebase();
+} catch (error) {
+  console.error('Failed to initialize Firebase:', error.message);
+}
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 

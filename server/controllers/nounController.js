@@ -36,6 +36,7 @@ exports.getAllNouns = async (req, res) => {
           $project: {
             nameEn: 1,
             nameHe: 1,
+            imageUrl: 1,
             category: { _id: '$category._id', categoryHe: '$category.categoryHe' }
           }
         }
@@ -100,12 +101,13 @@ exports.getNounsByCategory = async (req, res) => {
 // Create new noun
 exports.createNoun = async (req, res) => {
   try {
-    const { nameEn, nameHe, category } = req.body;
+    const { nameEn, nameHe, category, imageUrl } = req.body;
 
     const noun = await Noun.create({
       nameEn,
       nameHe,
-      category
+      category,
+      imageUrl: imageUrl || ''
     });
 
     const populatedNoun = await Noun.findById(noun._id)
@@ -127,11 +129,16 @@ exports.createNoun = async (req, res) => {
 // Update noun
 exports.updateNoun = async (req, res) => {
   try {
-    const { nameEn, nameHe, category } = req.body;
+    const { nameEn, nameHe, category, imageUrl } = req.body;
+
+    const updateData = { nameEn, nameHe, category };
+    if (imageUrl !== undefined) {
+      updateData.imageUrl = imageUrl;
+    }
 
     const noun = await Noun.findByIdAndUpdate(
       req.params.id,
-      { nameEn, nameHe, category },
+      updateData,
       { new: true, runValidators: true }
     ).populate('category', 'categoryHe');
 

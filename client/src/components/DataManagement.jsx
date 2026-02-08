@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import ConfirmDialog from './ConfirmDialog';
+import { uploadImage, deleteImage } from '../utils/imageUpload';
 import './DataManagement.css';
 
 function DataManagement() {
@@ -31,7 +32,10 @@ function DataManagement() {
   const [editingCategory, setEditingCategory] = useState(null);
   const [editingNoun, setEditingNoun] = useState(null);
   const [categoryForm, setCategoryForm] = useState({ categoryHe: '' });
-  const [nounForm, setNounForm] = useState({ nameEn: '', nameHe: '', category: '' });
+  const [nounForm, setNounForm] = useState({ nameEn: '', nameHe: '', category: '', imageUrl: '' });
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [deleteAction, setDeleteAction] = useState(null);
   const [deleteMessage, setDeleteMessage] = useState('');
@@ -208,7 +212,34 @@ function DataManagement() {
   const handleNounSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    
     try {
+      let imageUrl = nounForm.imageUrl;
+      
+      // Upload new image if selected
+      if (selectedImage) {
+        setUploadingImage(true);
+        try {
+          imageUrl = await uploadImage(selectedImage, 'nouns');
+          
+          // Delete old image if updating and had a previous image
+          if (editingNoun && editingNoun.imageUrl && editingNoun.imageUrl !== imageUrl) {
+            try {
+              await deleteImage(editingNoun.imageUrl);
+            } catch (deleteError) {
+              console.error('Error deleting old image:', deleteError);
+              // Continue even if delete fails
+            }
+          }
+        } catch (uploadError) {
+          setError('Failed to upload image: ' + uploadError.message);
+          setUploadingImage(false);
+          setLoading(false);
+          return;
+        }
+        setUploadingImage(false);
+      }
+      
       const token = localStorage.getItem('token');
       const url = editingNoun 
         ? `http://localhost:5000/api/nouns/${editingNoun._id}`
@@ -220,13 +251,15 @@ function DataManagement() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(nounForm)
+        body: JSON.stringify({ ...nounForm, imageUrl })
       });
 
       if (response.ok) {
         resetNouns();
         setShowNounModal(false);
-        setNounForm({ nameEn: '', nameHe: '', category: '' });
+        setNounForm({ nameEn: '', nameHe: '', category: '', imageUrl: '' });
+        setSelectedImage(null);
+        setImagePreview('');
         setEditingNoun(null);
       } else {
         setError('Failed to save noun');
@@ -347,17 +380,41 @@ function DataManagement() {
     setShowCategoryModal(true);
   };
 
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview('');
+    setNounForm({ ...nounForm, imageUrl: '' });
+  };
+
   const openNounModal = (noun = null) => {
     if (noun) {
       setEditingNoun(noun);
       setNounForm({
         nameEn: noun.nameEn,
         nameHe: noun.nameHe,
-        category: noun.category._id
+        category: noun.category._id,
+        imageUrl: noun.imageUrl || ''
       });
+      setImagePreview(noun.imageUrl || '');
+      setSelectedImage(null);
     } else {
       setEditingNoun(null);
-      setNounForm({ nameEn: '', nameHe: '', category: '' });
+      setNounForm({ nameEn: '', nameHe: '', category: '', imageUrl: '' });
+      setImagePreview('');
+      setSelectedImage(null);
     }
     setShowNounModal(true);
   };
@@ -462,6 +519,7 @@ function DataManagement() {
               <table>
                 <thead>
                   <tr>
+                    <th>Image</th>
                     <th>English</th>
                     <th>Hebrew</th>
                     <th>Category</th>
@@ -471,6 +529,17 @@ function DataManagement() {
                 <tbody>
                   {sortedNouns.map(noun => (
                     <tr key={noun._id}>
+                      <td>
+                        {noun.imageUrl ? (
+                          <img 
+                            src={noun.imageUrl} 
+                            alt={noun.nameEn} 
+                            className="noun-thumbnail"
+                          />
+                        ) : (
+                          <span className="no-image">No image</span>
+                        )}
+                      </td>
                       <td>{noun.nameEn}</td>
                       <td>{noun.nameHe}</td>
                       <td>{noun.category?.categoryHe || 'N/A'}</td>
@@ -494,7 +563,7 @@ function DataManagement() {
                   ))}
                   {!nounsLoading && nouns.length === 0 && (
                     <tr>
-                      <td colSpan="4" className="empty-row">No nouns found.</td>
+                      <td colSpan="5" className="empty-row">No nouns found.</td>
                     </tr>
                   )}
                 </tbody>
@@ -580,14 +649,38 @@ function DataManagement() {
                   ))}
                 </select>
               </div>
+              <div className="form-group">
+                <label>Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  disabled={uploadingImage}
+                />
+                {imagePreview && (
+                  <div className="image-preview">
+                    <img src={imagePreview} alt="Preview" />
+                    <button 
+                      type="button" 
+                      onClick={handleRemoveImage}
+                      className="remove-image-btn"
+                      disabled={uploadingImage}
+                    >
+                      Remove Image
+                    </button>
+                  </div>
+                )}
+                <small>Supported formats: JPEG, PNG, GIF, WebP (Max 5MB)</small>
+              </div>
               <div className="modal-actions">
-                <button type="submit" className="save-btn" disabled={loading}>
-                  {loading ? 'Saving...' : 'Save'}
+                <button type="submit" className="save-btn" disabled={loading || uploadingImage}>
+                  {uploadingImage ? 'Uploading...' : loading ? 'Saving...' : 'Save'}
                 </button>
                 <button 
                   type="button" 
                   onClick={() => setShowNounModal(false)}
                   className="cancel-btn"
+                  disabled={uploadingImage}
                 >
                   Cancel
                 </button>

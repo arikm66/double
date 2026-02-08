@@ -15,6 +15,11 @@ const nounSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
     required: [true, 'Category is required']
+  },
+  imageUrl: {
+    type: String,
+    trim: true,
+    default: ''
   }
 }, {
   timestamps: true
