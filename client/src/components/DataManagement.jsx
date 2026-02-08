@@ -39,6 +39,9 @@ function DataManagement() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [deleteAction, setDeleteAction] = useState(null);
   const [deleteMessage, setDeleteMessage] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [loadingAllNouns, setLoadingAllNouns] = useState(false);
   const categoriesLoadMoreRef = useRef(null);
   const nounsLoadMoreRef = useRef(null);
 
@@ -132,6 +135,65 @@ function DataManagement() {
     });
   }, [nouns]);
 
+  const filteredNouns = useMemo(() => {
+    let filtered = sortedNouns;
+
+    // Filter by search text
+    if (searchText.trim()) {
+      const search = searchText.toLowerCase();
+      filtered = filtered.filter(noun => 
+        noun.nameEn.toLowerCase().includes(search) ||
+        noun.nameHe.includes(searchText.trim()) ||
+        noun.category?.categoryHe?.includes(searchText.trim())
+      );
+    }
+
+    // Filter by category
+    if (filterCategory) {
+      filtered = filtered.filter(noun => noun.category?._id === filterCategory);
+    }
+
+    return filtered;
+  }, [sortedNouns, searchText, filterCategory]);
+
+  // Load all nouns when filters are applied
+  useEffect(() => {
+    const loadAllNouns = async () => {
+      if ((searchText || filterCategory) && nounsHasMore && !loadingAllNouns) {
+        setLoadingAllNouns(true);
+        
+        // Fetch all remaining nouns
+        let currentPage = nounsPage;
+        let hasMore = nounsHasMore;
+        
+        while (hasMore) {
+          currentPage++;
+          try {
+            const response = await fetch(
+              `http://localhost:5000/api/nouns?page=${currentPage}&limit=${NOUNS_PAGE_SIZE}`
+            );
+            const data = await response.json();
+            const newNouns = data.nouns || [];
+            
+            hasMore = Boolean(data.hasMore);
+            setNounsHasMore(hasMore);
+            setNounsPage(currentPage);
+            setNouns((prev) => [...prev, ...newNouns]);
+            
+            if (!hasMore) break;
+          } catch (err) {
+            console.error('Error loading all nouns:', err);
+            break;
+          }
+        }
+        
+        setLoadingAllNouns(false);
+      }
+    };
+    
+    loadAllNouns();
+  }, [searchText, filterCategory, nounsHasMore, nounsPage, loadingAllNouns, NOUNS_PAGE_SIZE]);
+
   useEffect(() => {
     if (activeTab !== 'categories') return;
     if (!categoriesLoadMoreRef.current) return;
@@ -161,6 +223,8 @@ function DataManagement() {
   useEffect(() => {
     if (activeTab !== 'nouns') return;
     if (!nounsLoadMoreRef.current) return;
+    // Disable infinite scroll when filters are active
+    if (searchText || filterCategory) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -175,7 +239,7 @@ function DataManagement() {
     observer.observe(nounsLoadMoreRef.current);
 
     return () => observer.disconnect();
-  }, [activeTab, fetchNouns, nounsHasMore, nounsLoading, nounsLoadingMore, nounsPage]);
+  }, [activeTab, fetchNouns, nounsHasMore, nounsLoading, nounsLoadingMore, nounsPage, searchText, filterCategory]);
 
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
@@ -509,6 +573,37 @@ function DataManagement() {
           <div className="tab-content">
             <div className="content-header">
               <h2>Nouns</h2>
+              <div className="filters-container">
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="🔍 Search nouns..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                />
+                <select
+                  className="filter-select"
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                >
+                  <option value="">All Categories</option>
+                  {categories.map(cat => (
+                    <option key={cat._id} value={cat._id}>{cat.categoryHe}</option>
+                  ))}
+                </select>
+                {(searchText || filterCategory) && (
+                  <button 
+                    className="clear-filters-btn"
+                    onClick={() => {
+                      setSearchText('');
+                      setFilterCategory('');
+                    }}
+                    title="Clear filters"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
               <button onClick={() => openNounModal()} className="add-button">
                 + Add Noun
               </button>
@@ -516,6 +611,14 @@ function DataManagement() {
             
             <div className="data-table">
               {nounsLoading && <div className="loading-row">Loading nouns...</div>}
+              {loadingAllNouns && !nounsLoading && (
+                <div className="loading-row">Loading all nouns for filtering...</div>
+              )}
+              {!nounsLoading && !loadingAllNouns && (searchText || filterCategory) && (
+                <div className="filter-results-info">
+                  Showing {filteredNouns.length} of {nouns.length} nouns
+                </div>
+              )}
               <table>
                 <thead>
                   <tr>
@@ -527,7 +630,7 @@ function DataManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedNouns.map(noun => (
+                  {filteredNouns.map(noun => (
                     <tr key={noun._id}>
                       <td>
                         {noun.imageUrl ? (
@@ -566,12 +669,19 @@ function DataManagement() {
                       <td colSpan="5" className="empty-row">No nouns found.</td>
                     </tr>
                   )}
+                  {!nounsLoading && nouns.length > 0 && filteredNouns.length === 0 && (
+                    <tr>
+                      <td colSpan="5" className="empty-row">No nouns match your filters.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
-              <div className="load-more" ref={nounsLoadMoreRef}>
-                {nounsLoadingMore && <span>Loading more...</span>}
-                {!nounsHasMore && nouns.length > 0 && <span>End of list</span>}
-              </div>
+              {!searchText && !filterCategory && (
+                <div className="load-more" ref={nounsLoadMoreRef}>
+                  {nounsLoadingMore && <span>Loading more...</span>}
+                  {!nounsHasMore && nouns.length > 0 && <span>End of list</span>}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -613,7 +723,7 @@ function DataManagement() {
       {/* Noun Modal */}
       {showNounModal && (
         <div className="modal-overlay" onClick={() => setShowNounModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{cursor: uploadingImage ? 'wait' : 'default'}}>
             <h3>{editingNoun ? 'Edit Noun' : 'Add Noun'}</h3>
             <form onSubmit={handleNounSubmit}>
               <div className="form-group">
@@ -650,21 +760,29 @@ function DataManagement() {
                 </select>
               </div>
               <div className="form-group">
-                <label>Image</label>
+                <label>Image {uploadingImage && <span className="uploading-indicator">⏳ Uploading...</span>}</label>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleImageSelect}
                   disabled={uploadingImage}
+                  style={{cursor: uploadingImage ? 'wait' : 'pointer'}}
                 />
                 {imagePreview && (
-                  <div className="image-preview">
-                    <img src={imagePreview} alt="Preview" />
+                  <div className="image-preview" style={{opacity: uploadingImage ? 0.6 : 1}}>
+                    {uploadingImage && (
+                      <div className="upload-spinner">
+                        <div className="spinner"></div>
+                        <p>Uploading image...</p>
+                      </div>
+                    )}
+                    <img src={imagePreview} alt="Preview" style={{filter: uploadingImage ? 'blur(2px)' : 'none'}} />
                     <button 
                       type="button" 
                       onClick={handleRemoveImage}
                       className="remove-image-btn"
                       disabled={uploadingImage}
+                      style={{cursor: uploadingImage ? 'wait' : 'pointer'}}
                     >
                       Remove Image
                     </button>
@@ -673,14 +791,15 @@ function DataManagement() {
                 <small>Supported formats: JPEG, PNG, GIF, WebP (Max 5MB)</small>
               </div>
               <div className="modal-actions">
-                <button type="submit" className="save-btn" disabled={loading || uploadingImage}>
-                  {uploadingImage ? 'Uploading...' : loading ? 'Saving...' : 'Save'}
+                <button type="submit" className="save-btn" disabled={loading || uploadingImage} style={{cursor: (loading || uploadingImage) ? 'wait' : 'pointer'}}>
+                  {uploadingImage ? '⏳ Uploading Image...' : loading ? '💾 Saving...' : 'Save'}
                 </button>
                 <button 
                   type="button" 
                   onClick={() => setShowNounModal(false)}
                   className="cancel-btn"
                   disabled={uploadingImage}
+                  style={{cursor: uploadingImage ? 'not-allowed' : 'pointer'}}
                 >
                   Cancel
                 </button>
