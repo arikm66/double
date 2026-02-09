@@ -15,7 +15,7 @@ exports.importNouns = async (req, res) => {
     total: 0,
     skipped: 0,
     imported: 0,
-    categoryNotFound: 0,
+    categoriesCreated: 0,
     errors: 0
   };
 
@@ -57,12 +57,13 @@ exports.importNouns = async (req, res) => {
           continue;
         }
 
-        // Find the category in database
-        const category = await Category.findOne({ categoryHe: nounData.categoryHe });
+        // Find or create the category in database
+        let category = await Category.findOne({ categoryHe: nounData.categoryHe });
         if (!category) {
-          logMessages.push(` - IGNORED: Category '${nounData.categoryHe}' not found in database\n`);
-          stats.categoryNotFound++;
-          continue;
+          // Create new category if it doesn't exist
+          category = await Category.create({ categoryHe: nounData.categoryHe });
+          logMessages.push(` - INFO: Created new category '${nounData.categoryHe}' (${category._id})\n`);
+          stats.categoriesCreated++;
         }
 
         // Create the noun
@@ -92,7 +93,7 @@ exports.importNouns = async (req, res) => {
     logMessages.push(`  Total processed: ${stats.total}\n`);
     logMessages.push(`  Successfully imported: ${stats.imported}\n`);
     logMessages.push(`  Skipped (already exists): ${stats.skipped}\n`);
-    logMessages.push(`  Ignored (category not found): ${stats.categoryNotFound}\n`);
+    logMessages.push(`  Categories created: ${stats.categoriesCreated}\n`);
     logMessages.push(`  Errors: ${stats.errors}\n`);
 
     // Save log file

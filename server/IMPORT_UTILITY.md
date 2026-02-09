@@ -8,8 +8,10 @@ This utility allows administrators to bulk import nouns from a JSON file into th
 2. For each noun:
    - Checks if a noun with the same `nameEn` already exists (skips if exists)
    - Looks up the category in the categories database by `categoryHe`
-   - If category found: creates the noun with the category's ObjectId
-   - If category not found: ignores the noun
+   - If category found: uses the existing category's ObjectId
+   - If category not found: automatically creates a new category with the given name
+   - If no category provided in JSON: ignores the noun (validation error)
+   - Creates the noun with the category's ObjectId
 3. Generates a detailed log file saved in the server root directory
 
 ## API Endpoint
@@ -43,7 +45,7 @@ Content-Type: application/json
 **Fields:**
 - `nameEn` (required): English name of the noun
 - `nameHe` (required): Hebrew name of the noun
-- `categoryHe` (required): Hebrew category name (must exist in categories database)
+- `categoryHe` (required): Hebrew category name (will be created if it doesn't exist)
 - `imageUrl` (optional): URL to the noun's image
 
 ## Response
@@ -55,7 +57,7 @@ Content-Type: application/json
     "total": 100,
     "imported": 85,
     "skipped": 10,
-    "categoryNotFound": 3,
+    "categoriesCreated": 3,
     "errors": 2
   },
   "duration": "2.45s"
@@ -115,7 +117,7 @@ const importNouns = async (nounsData, token) => {
 
 1. **Admin Only**: Only users with admin role can access this endpoint
 2. **Duplicate Check**: Uses `nameEn` to check for existing nouns
-3. **Category Matching**: Categories must exist in the database before importing nouns
+3. **Auto-Category Creation**: Categories are automatically created if they don't exist
 4. **Category Lookup**: Matches against `categoryHe` field in categories collection
 5. **Direct Array Format**: Send nouns as a direct JSON array, not wrapped in an object
 6. **Atomicity**: Each noun is processed independently - partial imports are possible
@@ -125,8 +127,8 @@ const importNouns = async (nounsData, token) => {
 See `sample-import.json` for an example of the expected JSON format.
 
 ## Error Handling
-- Missing required fields: Logged and skipped
-- Category not found: Logged and ignored
+- Missing required fields (including categoryHe): Logged as error and skipped
+- Category not found: Automatically creates new category and continues
 - Duplicate nouns: Logged and skipped
 - Other errors: Logged with error message
 

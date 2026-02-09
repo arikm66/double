@@ -486,13 +486,17 @@ function DataManagement() {
 
       if (response.ok) {
         setImportResults(result);
-        // Refresh nouns list
+        // Refresh nouns and categories lists
         resetNouns();
+        resetCategories();
       } else {
         setError(result.message || 'Import failed');
         // Only set results if stats exist (for partial imports)
         if (result.stats) {
           setImportResults(result);
+          // Refresh lists even on partial success
+          resetNouns();
+          resetCategories();
         }
       }
     } catch (err) {
@@ -802,8 +806,8 @@ function DataManagement() {
                   <li>Upload a direct JSON array of noun objects</li>
                   <li>Nouns with existing <code>nameEn</code> will be skipped</li>
                   <li>Use <code>categoryHe</code> field with Hebrew category name</li>
-                  <li>Categories must exist in the database</li>
-                  <li>Nouns with non-existent categories will be ignored</li>
+                  <li>Categories will be automatically created if they don't exist</li>
+                  <li>Nouns without a <code>categoryHe</code> field will be ignored</li>
                   <li>A detailed log file will be generated on the server</li>
                 </ul>
               </div>
@@ -856,9 +860,9 @@ function DataManagement() {
                       <div className="stat-number">{importResults.stats.skipped}</div>
                       <div className="stat-label">Skipped (Exists)</div>
                     </div>
-                    <div className="stat-card ignored">
-                      <div className="stat-number">{importResults.stats.categoryNotFound}</div>
-                      <div className="stat-label">Ignored (No Category)</div>
+                    <div className="stat-card created">
+                      <div className="stat-number">{importResults.stats.categoriesCreated || 0}</div>
+                      <div className="stat-label">Categories Created</div>
                     </div>
                     <div className="stat-card error">
                       <div className="stat-number">{importResults.stats.errors}</div>
