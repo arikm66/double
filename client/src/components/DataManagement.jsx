@@ -698,13 +698,17 @@ function DataManagement() {
                   placeholder="🔍 Search nouns..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
+                  disabled={loadingAllNouns}
+                  style={{cursor: loadingAllNouns ? 'wait' : 'text'}}
                 />
                 <select
                   className="filter-select"
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
+                  disabled={loadingAllNouns}
+                  style={{cursor: loadingAllNouns ? 'wait' : 'pointer'}}
                 >
-                  <option value="">All Categories</option>
+                  <option value="">{loadingAllNouns ? '⏳ Loading...' : 'All Categories'}</option>
                   {categories.map(cat => (
                     <option key={cat._id} value={cat._id}>{cat.categoryHe}</option>
                   ))}
@@ -727,17 +731,19 @@ function DataManagement() {
               </button>
             </div>
             
-            <div className="data-table">
+            <div className="data-table" style={{position: 'relative', opacity: loadingAllNouns ? 0.6 : 1}}>
               {nounsLoading && <div className="loading-row">Loading nouns...</div>}
               {loadingAllNouns && !nounsLoading && (
-                <div className="loading-row">Loading all nouns for filtering...</div>
+                <div className="loading-row" style={{backgroundColor: '#fff3cd', border: '1px solid #ffc107', padding: '15px', fontWeight: 'bold'}}>
+                  ⏳ Loading all nouns for filtering... Please wait.
+                </div>
               )}
               {!nounsLoading && !loadingAllNouns && (searchText || filterCategory) && (
                 <div className="filter-results-info">
                   Showing {filteredNouns.length} of {nouns.length} nouns
                 </div>
               )}
-              <table>
+              <table style={{pointerEvents: loadingAllNouns ? 'none' : 'auto'}}>
                 <thead>
                   <tr>
                     <th>Image</th>
