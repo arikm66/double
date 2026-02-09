@@ -42,8 +42,11 @@ exports.importNouns = async (req, res) => {
       try {
         logMessages.push(`[${index}/${stats.total}] Processing: ${nounData.nameEn || 'UNNAMED'}`);
 
+        // Support both 'categoryHe' and 'category' field names
+        const categoryName = nounData.categoryHe || nounData.category;
+
         // Validate required fields
-        if (!nounData.nameEn || !nounData.nameHe || !nounData.categoryHe) {
+        if (!nounData.nameEn || !nounData.nameHe || !categoryName) {
           logMessages.push(` - ERROR: Missing required fields\n`);
           stats.errors++;
           continue;
@@ -58,11 +61,11 @@ exports.importNouns = async (req, res) => {
         }
 
         // Find or create the category in database
-        let category = await Category.findOne({ categoryHe: nounData.categoryHe });
+        let category = await Category.findOne({ categoryHe: categoryName });
         if (!category) {
           // Create new category if it doesn't exist
-          category = await Category.create({ categoryHe: nounData.categoryHe });
-          logMessages.push(` - INFO: Created new category '${nounData.categoryHe}' (${category._id})\n`);
+          category = await Category.create({ categoryHe: categoryName });
+          logMessages.push(` - INFO: Created new category '${categoryName}' (${category._id})\n`);
           stats.categoriesCreated++;
         }
 

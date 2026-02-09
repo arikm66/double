@@ -483,6 +483,19 @@ function DataManagement() {
         body: JSON.stringify(jsonData)
       });
 
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const textResponse = await response.text();
+        if (textResponse.includes('<!DOCTYPE') || textResponse.includes('<html')) {
+          setError('Server error occurred. Please check the server console or contact support.');
+        } else {
+          setError('Unexpected server response: ' + textResponse.substring(0, 100));
+        }
+        setImportLoading(false);
+        return;
+      }
+
       const result = await response.json();
 
       if (response.ok) {
@@ -502,7 +515,14 @@ function DataManagement() {
       }
     } catch (err) {
       console.error('Import error:', err);
-      setError('Error importing nouns: ' + err.message);
+      // Better error messages
+      if (err.name === 'SyntaxError') {
+        setError('Invalid JSON in file. Please check the file format.');
+      } else if (err.message.includes('Failed to fetch')) {
+        setError('Cannot connect to server. Please ensure the server is running.');
+      } else {
+        setError('Error importing nouns: ' + err.message);
+      }
     } finally {
       setImportLoading(false);
     }
