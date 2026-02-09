@@ -29,6 +29,7 @@ const authRoutes = require('./routes/auth');
 const nounRoutes = require('./routes/nouns');
 const categoryRoutes = require('./routes/categories');
 const userRoutes = require('./routes/users');
+const importRoutes = require('./routes/import');
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the API' });
@@ -42,6 +43,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/nouns', nounRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/import', importRoutes);
 
 // Start server
 app.listen(PORT, () => {

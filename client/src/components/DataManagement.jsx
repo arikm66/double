@@ -42,6 +42,9 @@ function DataManagement() {
   const [searchText, setSearchText] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [loadingAllNouns, setLoadingAllNouns] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResults, setImportResults] = useState(null);
   const categoriesLoadMoreRef = useRef(null);
   const nounsLoadMoreRef = useRef(null);
 
@@ -433,6 +436,79 @@ function DataManagement() {
     setDeleteAction(null);
   };
 
+  const handleImportFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.type !== 'application/json') {
+        setError('Please select a JSON file');
+        return;
+      }
+      setImportFile(file);
+      setImportResults(null);
+      setError('');
+    }
+  };
+
+  const handleImportNouns = async () => {
+    if (!importFile) {
+      setError('Please select a file first');
+      return;
+    }
+
+    setImportLoading(true);
+    setError('');
+    setImportResults(null);
+
+    try {
+      // Read the file
+      const fileContent = await importFile.text();
+      const jsonData = JSON.parse(fileContent);
+
+      // Validate it's an array
+      if (!Array.isArray(jsonData)) {
+        setError('Invalid JSON format. Expected a direct array of noun objects.');
+        setImportLoading(false);
+        return;
+      }
+
+      // Call the import API
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/import/nouns', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(jsonData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setImportResults(result);
+        // Refresh nouns list
+        resetNouns();
+      } else {
+        setError(result.message || 'Import failed');
+        // Only set results if stats exist (for partial imports)
+        if (result.stats) {
+          setImportResults(result);
+        }
+      }
+    } catch (err) {
+      console.error('Import error:', err);
+      setError('Error importing nouns: ' + err.message);
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const clearImport = () => {
+    setImportFile(null);
+    setImportResults(null);
+    setError('');
+  };
+
   const openCategoryModal = (category = null) => {
     if (category) {
       setEditingCategory(category);
@@ -508,11 +584,24 @@ function DataManagement() {
           >
             Nouns ({nounsTotal || nouns.length})
           </button>
+          {isAdmin && (
+            <button 
+              className={`tab-button ${activeTab === 'import' ? 'active' : ''}`}
+              onClick={() => setActiveTab('import')}
+            >
+              Import
+            </button>
+          )}
         </div>
       </div>
 
       <div className="data-content">
-        {error && <div className="error-banner">{error}</div>}
+        {error && (
+          <div className="error-banner">
+            <span>{error}</span>
+            <button className="error-close" onClick={() => setError('')}>✕</button>
+          </div>
+        )}
 
         {activeTab === 'categories' && (
           <div className="tab-content">
@@ -680,6 +769,107 @@ function DataManagement() {
                 <div className="load-more" ref={nounsLoadMoreRef}>
                   {nounsLoadingMore && <span>Loading more...</span>}
                   {!nounsHasMore && nouns.length > 0 && <span>End of list</span>}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'import' && isAdmin && (
+          <div className="tab-content">
+            <div className="content-header">
+              <h2>Import Nouns from JSON</h2>
+            </div>
+            
+            <div className="import-section">
+              <div className="import-instructions">
+                <h3>Instructions</h3>
+                <p>Upload a JSON file with the following format:</p>
+                <pre>{`[
+  {
+    "nameEn": "apple",
+    "nameHe": "תפוח",
+    "categoryHe": "פירות",
+    "imageUrl": "optional"
+  },
+  {
+    "nameEn": "banana",
+    "nameHe": "בננה",
+    "categoryHe": "פירות"
+  }
+]`}</pre>
+                <ul>
+                  <li>Upload a direct JSON array of noun objects</li>
+                  <li>Nouns with existing <code>nameEn</code> will be skipped</li>
+                  <li>Use <code>categoryHe</code> field with Hebrew category name</li>
+                  <li>Categories must exist in the database</li>
+                  <li>Nouns with non-existent categories will be ignored</li>
+                  <li>A detailed log file will be generated on the server</li>
+                </ul>
+              </div>
+
+              <div className="import-upload">
+                <div className="form-group">
+                  <label>Select JSON File</label>
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportFileChange}
+                    disabled={importLoading}
+                  />
+                  {importFile && (
+                    <div className="file-info">
+                      <span>📄 {importFile.name}</span>
+                      <button 
+                        onClick={clearImport}
+                        className="clear-file-btn"
+                        disabled={importLoading}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleImportNouns}
+                  className="import-btn"
+                  disabled={!importFile || importLoading}
+                >
+                  {importLoading ? '⏳ Importing...' : '📥 Import Nouns'}
+                </button>
+              </div>
+
+              {importResults && importResults.stats && (
+                <div className="import-results">
+                  <h3>Import Results</h3>
+                  <div className="results-stats">
+                    <div className="stat-card">
+                      <div className="stat-number">{importResults.stats.total}</div>
+                      <div className="stat-label">Total Processed</div>
+                    </div>
+                    <div className="stat-card success">
+                      <div className="stat-number">{importResults.stats.imported}</div>
+                      <div className="stat-label">Imported</div>
+                    </div>
+                    <div className="stat-card skipped">
+                      <div className="stat-number">{importResults.stats.skipped}</div>
+                      <div className="stat-label">Skipped (Exists)</div>
+                    </div>
+                    <div className="stat-card ignored">
+                      <div className="stat-number">{importResults.stats.categoryNotFound}</div>
+                      <div className="stat-label">Ignored (No Category)</div>
+                    </div>
+                    <div className="stat-card error">
+                      <div className="stat-number">{importResults.stats.errors}</div>
+                      <div className="stat-label">Errors</div>
+                    </div>
+                  </div>
+                  <div className="results-info">
+                    <p><strong>Duration:</strong> {importResults.duration}</p>
+                    <p><strong>Log file:</strong> {importResults.logFile}</p>
+                    <p className="log-note">Log file saved on server in the server root directory</p>
+                  </div>
                 </div>
               )}
             </div>

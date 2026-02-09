@@ -1,0 +1,20 @@
+[
+  {
+    "nameEn": "apple",
+    "nameHe": "תפוח",
+    "categoryHe": "פירות",
+    "imageUrl": ""
+  },
+  {
+    "nameEn": "banana",
+    "nameHe": "בננה",
+    "categoryHe": "פירות",
+    "imageUrl": ""
+  },
+  {
+    "nameEn": "carrot",
+    "nameHe": "גזר",
+    "categoryHe": "ירקות",
+    "imageUrl": ""
+  }
+]

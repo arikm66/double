@@ -186,7 +186,12 @@ function UserManagement() {
       </div>
 
       <div className="user-management-content">
-        {error && <div className="error-banner">{error}</div>}
+        {error && (
+          <div className="error-banner">
+            <span>{error}</span>
+            <button className="error-close" onClick={() => setError('')}>✕</button>
+          </div>
+        )}
         {successMessage && <div className="success-banner">{successMessage}</div>}
 
         <div className="user-management-card">

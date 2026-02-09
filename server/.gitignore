@@ -3,6 +3,9 @@ node_modules
 .DS_Store
 *.log
 
+# Import logs
+import-log-*.txt
+
 # Firebase
 *-firebase-adminsdk-*.json
 firebase-debug.log
