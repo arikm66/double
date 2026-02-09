@@ -47,6 +47,7 @@ function DataManagement() {
   const [importResults, setImportResults] = useState(null);
   const categoriesLoadMoreRef = useRef(null);
   const nounsLoadMoreRef = useRef(null);
+  const importFileInputRef = useRef(null);
 
   useEffect(() => {
     fetchCategories(1, true);
@@ -511,6 +512,10 @@ function DataManagement() {
     setImportFile(null);
     setImportResults(null);
     setError('');
+    // Reset the file input to allow reselecting the same file
+    if (importFileInputRef.current) {
+      importFileInputRef.current.value = '';
+    }
   };
 
   const openCategoryModal = (category = null) => {
@@ -816,6 +821,7 @@ function DataManagement() {
                 <div className="form-group">
                   <label>Select JSON File</label>
                   <input
+                    ref={importFileInputRef}
                     type="file"
                     accept=".json"
                     onChange={handleImportFileChange}
