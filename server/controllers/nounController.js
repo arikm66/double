@@ -1,4 +1,5 @@
 const Noun = require('../models/Noun');
+const { getBucket } = require('../config/firebase');
 
 // Get all nouns (paged)
 exports.getAllNouns = async (req, res) => {
@@ -162,11 +163,33 @@ exports.updateNoun = async (req, res) => {
 // Delete noun
 exports.deleteNoun = async (req, res) => {
   try {
-    const noun = await Noun.findByIdAndDelete(req.params.id);
+    const noun = await Noun.findById(req.params.id);
 
     if (!noun) {
       return res.status(404).json({ message: 'Noun not found' });
     }
+
+    // Delete image from Firebase Storage if it exists
+    if (noun.imageUrl) {
+      try {
+        const bucket = getBucket();
+        // Extract the file path from the URL
+        const url = new URL(noun.imageUrl);
+        const pathMatch = url.pathname.match(/\/o\/(.+)/);
+        if (pathMatch) {
+          const filePath = decodeURIComponent(pathMatch[1].split('?')[0]);
+          const file = bucket.file(filePath);
+          await file.delete();
+          console.log(`Deleted image: ${filePath}`);
+        }
+      } catch (imageError) {
+        console.error('Error deleting image from storage:', imageError);
+        // Continue with noun deletion even if image deletion fails
+      }
+    }
+
+    // Delete the noun from database
+    await Noun.findByIdAndDelete(req.params.id);
 
     res.json({
       message: 'Noun deleted successfully'
