@@ -45,14 +45,26 @@ function DataManagement() {
   const [importFile, setImportFile] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
   const [importResults, setImportResults] = useState(null);
+  const [importProgress, setImportProgress] = useState({ current: 0, total: 0, percentage: 0, currentNoun: '', message: '', stats: null });
   const categoriesLoadMoreRef = useRef(null);
   const nounsLoadMoreRef = useRef(null);
   const importFileInputRef = useRef(null);
+  const eventSourceRef = useRef(null);
+  const importResultsRef = useRef(null);
 
   useEffect(() => {
     fetchCategories(1, true);
     fetchNouns(1, true);
   }, []);
+
+  // Auto-scroll to results after import completes
+  useEffect(() => {
+    if (importResults && !importLoading && importResultsRef.current) {
+      setTimeout(() => {
+        importResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300); // Small delay to ensure modal has closed
+    }
+  }, [importResults, importLoading]);
 
   const fetchCategories = useCallback(async (page = 1, replace = false) => {
     const isFirstPage = page === 1;
@@ -459,6 +471,7 @@ function DataManagement() {
     setImportLoading(true);
     setError('');
     setImportResults(null);
+    setImportProgress({ current: 0, total: 0, percentage: 0, currentNoun: '', message: 'Reading file...', stats: null });
 
     try {
       // Read the file
@@ -469,12 +482,14 @@ function DataManagement() {
       if (!Array.isArray(jsonData)) {
         setError('Invalid JSON format. Expected a direct array of noun objects.');
         setImportLoading(false);
+        setImportProgress({ current: 0, total: 0, percentage: 0, currentNoun: '', message: '', stats: null });
         return;
       }
 
-      // Call the import API
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/import/nouns', {
+      
+      // Create a fetch request to get the stream
+      const response = await fetch('http://localhost:5000/api/import/nouns-sse', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -483,36 +498,73 @@ function DataManagement() {
         body: JSON.stringify(jsonData)
       });
 
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const textResponse = await response.text();
-        if (textResponse.includes('<!DOCTYPE') || textResponse.includes('<html')) {
-          setError('Server error occurred. Please check the server console or contact support.');
-        } else {
-          setError('Unexpected server response: ' + textResponse.substring(0, 100));
-        }
-        setImportLoading(false);
-        return;
+      if (!response.ok) {
+        throw new Error('Server returned error status: ' + response.status);
       }
 
-      const result = await response.json();
+      // Read the stream
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
 
-      if (response.ok) {
-        setImportResults(result);
-        // Refresh nouns and categories lists
-        resetNouns();
-        resetCategories();
-      } else {
-        setError(result.message || 'Import failed');
-        // Only set results if stats exist (for partial imports)
-        if (result.stats) {
-          setImportResults(result);
-          // Refresh lists even on partial success
-          resetNouns();
-          resetCategories();
+      while (true) {
+        const { value, done } = await reader.read();
+        
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop() || ''; // Keep incomplete message in buffer
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          
+          // Parse SSE format: "event: eventName\ndata: jsonData"
+          const eventMatch = line.match(/event:\s*(.+)/);
+          const dataMatch = line.match(/data:\s*(.+)/);
+          
+          if (eventMatch && dataMatch) {
+            const eventType = eventMatch[1].trim();
+            const eventData = JSON.parse(dataMatch[1]);
+            
+            switch (eventType) {
+              case 'progress':
+                setImportProgress({
+                  current: eventData.current,
+                  total: eventData.total,
+                  percentage: eventData.percentage,
+                  currentNoun: eventData.currentNoun || '',
+                  message: eventData.message || '',
+                  stats: eventData.stats
+                });
+                break;
+                
+              case 'complete':
+                setImportResults(eventData);
+                setImportProgress({ 
+                  current: eventData.stats.total, 
+                  total: eventData.stats.total, 
+                  percentage: 100, 
+                  currentNoun: '',
+                  message: 'Import completed!',
+                  stats: eventData.stats
+                });
+                // Refresh nouns and categories lists
+                resetNouns();
+                resetCategories();
+                break;
+                
+              case 'error':
+                setError(eventData.message || 'Import failed');
+                if (eventData.stats) {
+                  setImportResults(eventData);
+                }
+                break;
+            }
+          }
         }
       }
+
     } catch (err) {
       console.error('Import error:', err);
       // Better error messages
@@ -531,10 +583,16 @@ function DataManagement() {
   const clearImport = () => {
     setImportFile(null);
     setImportResults(null);
+    setImportProgress({ current: 0, total: 0, percentage: 0, currentNoun: '', message: '', stats: null });
     setError('');
     // Reset the file input to allow reselecting the same file
     if (importFileInputRef.current) {
       importFileInputRef.current.value = '';
+    }
+    // Close any existing EventSource connection
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
     }
   };
 
@@ -877,7 +935,7 @@ function DataManagement() {
               </div>
 
               {importResults && importResults.stats && (
-                <div className="import-results">
+                <div className="import-results" ref={importResultsRef}>
                   <h3>Import Results</h3>
                   <div className="results-stats">
                     <div className="stat-card">
@@ -912,6 +970,42 @@ function DataManagement() {
           </div>
         )}
       </div>
+
+      {/* Import Progress Modal */}
+      {importLoading && importProgress.total > 0 && (
+        <div className="modal-overlay progress-modal-overlay">
+          <div className="modal-content progress-modal-content">
+            <div className="import-progress">
+              <h3>Import in Progress</h3>
+              <div className="progress-info">
+                <div className="progress-text">
+                  <strong>{importProgress.current} / {importProgress.total}</strong> nouns processed
+                  {importProgress.currentNoun && (
+                    <span className="progress-current-noun">Currently processing: <strong>{importProgress.currentNoun}</strong></span>
+                  )}
+                  {importProgress.message && <span className="progress-message">{importProgress.message}</span>}
+                </div>
+                <div className="progress-percentage">{importProgress.percentage}%</div>
+              </div>
+              <div className="progress-bar">
+                <div 
+                  className="progress-bar-fill" 
+                  style={{ width: `${importProgress.percentage}%` }}
+                ></div>
+              </div>
+              {importProgress.stats && (
+                <div className="progress-stats">
+                  <span className="stat-item">✅ Imported: {importProgress.stats.imported}</span>
+                  <span className="stat-item">⏭️ Skipped: {importProgress.stats.skipped}</span>
+                  <span className="stat-item">🆕 Categories Created: {importProgress.stats.categoriesCreated}</span>
+                  <span className="stat-item">❗ Errors: {importProgress.stats.errors}</span>
+                </div>
+              )}
+              <p className="progress-warning">⚠️ Please do not close or refresh this page</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Category Modal */}
       {showCategoryModal && (

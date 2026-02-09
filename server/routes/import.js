@@ -11,4 +11,12 @@ router.post(
   importController.importNouns
 );
 
+// Import nouns with SSE for real-time progress (admin only)
+router.post(
+  '/nouns-sse',
+  authMiddleware,
+  authMiddleware.requireAdmin,
+  importController.importNounsSSE
+);
+
 module.exports = router;
