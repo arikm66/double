@@ -12,6 +12,8 @@ try {
 }
 
 const app = express();
+
+const path = require('path');
 const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB
@@ -31,9 +33,19 @@ const categoryRoutes = require('./routes/categories');
 const userRoutes = require('./routes/users');
 const importRoutes = require('./routes/import');
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the API' });
-});
+
+// Serve static files from client build in production
+if (process.env.NODE_ENV === 'production') {
+  const clientBuildPath = path.join(__dirname, '..', 'client', 'dist');
+  app.use(express.static(clientBuildPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => {
+    res.json({ message: 'Welcome to the API' });
+  });
+}
 
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working!' });
