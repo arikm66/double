@@ -46,11 +46,14 @@ function DataManagement() {
   const [importLoading, setImportLoading] = useState(false);
   const [importResults, setImportResults] = useState(null);
   const [importProgress, setImportProgress] = useState({ current: 0, total: 0, percentage: 0, currentNoun: '', message: '', stats: null });
+  const [elapsedTime, setElapsedTime] = useState(0);
   const categoriesLoadMoreRef = useRef(null);
   const nounsLoadMoreRef = useRef(null);
   const importFileInputRef = useRef(null);
   const eventSourceRef = useRef(null);
   const importResultsRef = useRef(null);
+  const timerRef = useRef(null);
+  const startTimeRef = useRef(null);
 
   useEffect(() => {
     fetchCategories(1, true);
@@ -65,6 +68,31 @@ function DataManagement() {
       }, 300); // Small delay to ensure modal has closed
     }
   }, [importResults, importLoading]);
+
+  // Elapsed time timer for import progress
+  useEffect(() => {
+    if (importLoading && importProgress.total > 0) {
+      // Start timer
+      startTimeRef.current = Date.now();
+      setElapsedTime(0);
+      timerRef.current = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        setElapsedTime(elapsed);
+      }, 1000);
+    } else {
+      // Stop timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [importLoading, importProgress.total]);
 
   const fetchCategories = useCallback(async (page = 1, replace = false) => {
     const isFirstPage = page === 1;
@@ -447,6 +475,12 @@ function DataManagement() {
   const handleCancelDelete = () => {
     setShowConfirmDialog(false);
     setDeleteAction(null);
+  };
+
+  const formatElapsedTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleImportFileChange = (e) => {
@@ -995,6 +1029,7 @@ function DataManagement() {
               </div>
               {importProgress.stats && (
                 <div className="progress-stats">
+                  <span className="stat-item">⏱️ Elapsed: {formatElapsedTime(elapsedTime)}</span>
                   <span className="stat-item">✅ Imported: {importProgress.stats.imported}</span>
                   <span className="stat-item">⏭️ Skipped: {importProgress.stats.skipped}</span>
                   <span className="stat-item">🆕 Categories Created: {importProgress.stats.categoriesCreated}</span>

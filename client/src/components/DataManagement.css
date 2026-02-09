@@ -898,7 +898,7 @@ tbody tr:hover {
 
 .progress-stats {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 12px;
   padding: 20px 0 15px;
@@ -915,6 +915,9 @@ tbody tr:hover {
   box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
   white-space: nowrap;
   transition: transform 0.2s;
+  flex: 0 0 auto;
+  min-width: 180px;
+  text-align: center;
 }
 
 .stat-item:hover {
