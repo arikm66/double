@@ -330,5 +330,5 @@ function createLogFileName() {
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
   
-  return `import-log-${year}-${month}-${day}_${hours}-${minutes}-${seconds}.txt`;
+  return `import-log-${year}-${month}-${day}_${hours}.${minutes}.${seconds}.txt`;
 }
