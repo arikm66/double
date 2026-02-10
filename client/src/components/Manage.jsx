@@ -48,6 +48,17 @@ function Manage() {
             <button className="manage-card-button">View Settings</button>
           </div>
           
+            <div className="manage-card">
+              <h3>Packs</h3>
+              <p>Manage packs and collections</p>
+              <button 
+                className="manage-card-button"
+                onClick={() => navigate('/packs')}
+              >
+                View Packs
+              </button>
+            </div>
+
           <div className="manage-card">
             <h3>Reports</h3>
             <p>View analytics and reports</p>
@@ -56,7 +67,7 @@ function Manage() {
           
           <div className="manage-card">
             <h3>Data</h3>
-            <p>Manage application data</p>
+            <p>Manage nouns and categories</p>
             <button 
               className="manage-card-button"
               onClick={() => navigate('/data-management')}

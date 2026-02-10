@@ -46,8 +46,16 @@ exports.updatePack = async (req, res) => {
 // Delete a pack
 exports.deletePack = async (req, res) => {
   try {
-    const pack = await Pack.findByIdAndDelete(req.params.id);
+    const pack = await Pack.findById(req.params.id);
     if (!pack) return res.status(404).json({ error: 'Pack not found' });
+
+    // Only allow creator or admin to delete
+    const user = req.user; // set by authMiddleware
+    if (!user || (String(pack.creator) !== String(user._id) && user.role !== 'admin')) {
+      return res.status(403).json({ error: 'Not authorized to delete this pack' });
+    }
+
+    await pack.deleteOne();
     res.json({ message: 'Pack deleted' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete pack' });
