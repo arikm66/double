@@ -18,16 +18,28 @@ function Manage() {
         
         <div className="manage-grid">
           {isAdmin && (
-            <div className="manage-card">
-              <h3>Users</h3>
-              <p>Manage user accounts</p>
-              <button 
-                className="manage-card-button"
-                onClick={() => navigate('/user-management')}
-              >
-                View Users
-              </button>
-            </div>
+            <>
+              <div className="manage-card">
+                <h3>Users</h3>
+                <p>Manage user accounts</p>
+                <button 
+                  className="manage-card-button"
+                  onClick={() => navigate('/user-management')}
+                >
+                  View Users
+                </button>
+              </div>
+              <div className="manage-card">
+                <h3>Utils</h3>
+                <p>Admin utilities and server files</p>
+                <button 
+                  className="manage-card-button"
+                  onClick={() => navigate('/utils')}
+                >
+                  View Utils
+                </button>
+              </div>
+            </>
           )}
           
           <div className="manage-card">

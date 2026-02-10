@@ -2,13 +2,12 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const router = express.Router();
+
 const authMiddleware = require('../middleware/authMiddleware');
+const { requireAdmin } = require('../middleware/authMiddleware');
 
 // List files in server folder (admin only)
-router.get('/list', authMiddleware, (req, res) => {
-  if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Forbidden: Admins only' });
-  }
+router.get('/list', authMiddleware, requireAdmin, (req, res) => {
   const dirPath = path.join(__dirname, '..');
   fs.readdir(dirPath, (err, files) => {
     if (err) {
