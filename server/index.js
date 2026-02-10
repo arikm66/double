@@ -34,7 +34,18 @@ const userRoutes = require('./routes/users');
 const importRoutes = require('./routes/import');
 
 
-// Serve static files from client build in production
+
+// API routes
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API is working!' });
+});
+app.use('/api/auth', authRoutes);
+app.use('/api/nouns', nounRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/import', importRoutes);
+
+// Serve static files from client build in production (after API routes)
 if (process.env.NODE_ENV === 'production') {
   const clientBuildPath = path.join(__dirname, '..', 'client', 'dist');
   app.use(express.static(clientBuildPath));
@@ -46,16 +57,6 @@ if (process.env.NODE_ENV === 'production') {
     res.json({ message: 'Welcome to the API' });
   });
 }
-
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'API is working!' });
-});
-
-app.use('/api/auth', authRoutes);
-app.use('/api/nouns', nounRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/import', importRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
