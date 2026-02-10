@@ -100,7 +100,7 @@ function ImportManager({ isAdmin, onError, onImportComplete }) {
       const token = localStorage.getItem('token');
       
       // Create a fetch request to get the stream
-      const response = await fetch('http://localhost:5000/api/import/nouns-sse', {
+      const response = await fetch('/api/import/nouns-sse', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

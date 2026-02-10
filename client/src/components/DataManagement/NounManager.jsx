@@ -27,7 +27,7 @@ function NounManager({ isAdmin, categories, onError, onDeleteRequest, onNounUpda
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/nouns?page=${page}&limit=${NOUNS_PAGE_SIZE}`
+        `/api/nouns?page=${page}&limit=${NOUNS_PAGE_SIZE}`
       );
       const data = await response.json();
       const newNouns = data.nouns || [];
@@ -107,7 +107,7 @@ function NounManager({ isAdmin, categories, onError, onDeleteRequest, onNounUpda
           currentPage++;
           try {
             const response = await fetch(
-              `http://localhost:5000/api/nouns?page=${currentPage}&limit=${NOUNS_PAGE_SIZE}`
+              `/api/nouns?page=${currentPage}&limit=${NOUNS_PAGE_SIZE}`
             );
             const data = await response.json();
             const newNouns = data.nouns || [];
@@ -161,8 +161,8 @@ function NounManager({ isAdmin, categories, onError, onDeleteRequest, onNounUpda
     try {
       const token = localStorage.getItem('token');
       const url = editingNoun 
-        ? `http://localhost:5000/api/nouns/${editingNoun._id}`
-        : 'http://localhost:5000/api/nouns';
+        ? `/api/nouns/${editingNoun._id}`
+        : '/api/nouns';
       
       const response = await fetch(url, {
         method: editingNoun ? 'PUT' : 'POST',
@@ -201,7 +201,7 @@ function NounManager({ isAdmin, categories, onError, onDeleteRequest, onNounUpda
   const performDeleteNoun = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/nouns/${id}`, {
+      const response = await fetch(`/api/nouns/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

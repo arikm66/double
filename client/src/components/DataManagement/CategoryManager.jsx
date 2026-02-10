@@ -24,7 +24,7 @@ function CategoryManager({ isAdmin, onError, onDeleteRequest, onCategoryUpdate }
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/categories?page=${page}&limit=${CATEGORIES_PAGE_SIZE}`
+        `/api/categories?page=${page}&limit=${CATEGORIES_PAGE_SIZE}`
       );
       const data = await response.json();
       const newCategories = data.categories || [];
@@ -86,8 +86,8 @@ function CategoryManager({ isAdmin, onError, onDeleteRequest, onCategoryUpdate }
     try {
       const token = localStorage.getItem('token');
       const url = editingCategory 
-        ? `http://localhost:5000/api/categories/${editingCategory._id}`
-        : 'http://localhost:5000/api/categories';
+        ? `/api/categories/${editingCategory._id}`
+        : '/api/categories';
       
       const response = await fetch(url, {
         method: editingCategory ? 'PUT' : 'POST',
@@ -126,7 +126,7 @@ function CategoryManager({ isAdmin, onError, onDeleteRequest, onCategoryUpdate }
   const performDeleteCategory = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/categories/${id}`, {
+      const response = await fetch(`/api/categories/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

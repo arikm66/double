@@ -29,7 +29,7 @@ function UserManagement() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/users', {
+      const response = await fetch('/api/users', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -72,8 +72,8 @@ function UserManagement() {
     try {
       const token = localStorage.getItem('token');
       const url = editingUser
-        ? `http://localhost:5000/api/users/${editingUser._id}`
-        : 'http://localhost:5000/api/users';
+        ? `/api/users/${editingUser._id}`
+        : '/api/users';
 
       const payload = {
         username: form.username.trim(),
@@ -125,7 +125,7 @@ function UserManagement() {
   const performDelete = async (userId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+      const response = await fetch(`/api/users/${userId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

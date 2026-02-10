@@ -1,3 +1,17 @@
+# Vite Dev Proxy Setup
+
+## Development
+When running the client locally with Vite (default port 5173), API requests using relative URLs (e.g., `/api/route`) are sent to the client server. Vite's proxy configuration (see `client/vite.config.js`) forwards these requests to the backend server (default port 5000).
+
+**Example:**
+- Browser shows request to `http://localhost:5173/api/categories`
+- Vite proxy forwards to `http://localhost:5000/api/categories`
+- Backend responds, and Vite returns the response to the client
+
+## Production
+In production, the client and server are served from the same domain, so relative URLs work without a proxy.
+
+**Tip:** If you see API requests going to port 5173 in dev tools, remember that Vite is handling the proxy behind the scenes.
 # Full Stack App - Node.js + React/Vite
 
 A full stack application with a Node.js/Express backend and React/Vite frontend.

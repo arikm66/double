@@ -24,7 +24,7 @@ function DataManagement() {
   // Fetch categories for nouns dropdown and tab count
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/categories?page=1&limit=1000');
+      const response = await fetch('/api/categories?page=1&limit=1000');
       const data = await response.json();
       setCategories(data.categories || []);
       setCategoriesTotal(typeof data.total === 'number' ? data.total : data.categories.length);
@@ -36,7 +36,7 @@ function DataManagement() {
   // Fetch nouns count for tab display
   const fetchNounsTotal = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/nouns?page=1&limit=1');
+      const response = await fetch('/api/nouns?page=1&limit=1');
       const data = await response.json();
       setNounsTotal(typeof data.total === 'number' ? data.total : 0);
     } catch (err) {
