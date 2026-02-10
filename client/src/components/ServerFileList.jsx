@@ -30,12 +30,12 @@ function ServerFileList() {
       });
   }, []);
 
-  const handleDownload = async (file) => {
-    setDownloading(file);
+  const handleDownload = async (fileName) => {
+    setDownloading(fileName);
     setError('');
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/utils/file/${encodeURIComponent(file)}`, {
+      const response = await fetch(`/api/utils/file/${encodeURIComponent(fileName)}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -50,7 +50,7 @@ function ServerFileList() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = file;
+      a.download = fileName;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -69,15 +69,17 @@ function ServerFileList() {
       <h3>Server Files</h3>
       <ul>
         {files.map(file => (
-          <li key={file}>
-            <button
-              onClick={() => handleDownload(file)}
-              disabled={!!downloading}
-              style={{ marginRight: 8 }}
-            >
-              {downloading === file ? 'Downloading...' : 'Download'}
-            </button>
-            {file}
+          <li key={file.name}>
+            {file.type === 'file' && (
+              <button
+                onClick={() => handleDownload(file.name)}
+                disabled={!!downloading}
+                style={{ marginRight: 8 }}
+              >
+                {downloading === file.name ? 'Downloading...' : 'Download'}
+              </button>
+            )}
+            {file.name} <span style={{ color: '#888', fontSize: '0.9em' }}>({file.type})</span>
           </li>
         ))}
       </ul>

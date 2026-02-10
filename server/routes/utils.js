@@ -9,10 +9,14 @@ const { requireAdmin } = require('../middleware/authMiddleware');
 // List files in server folder (admin only)
 router.get('/list', authMiddleware, requireAdmin, (req, res) => {
   const dirPath = path.join(__dirname, '..');
-  fs.readdir(dirPath, (err, files) => {
+  fs.readdir(dirPath, { withFileTypes: true }, (err, items) => {
     if (err) {
       return res.status(500).json({ error: 'Unable to list files' });
     }
+    const files = items.map(item => ({
+      name: item.name,
+      type: item.isDirectory() ? 'folder' : 'file'
+    }));
     res.json({ files });
   });
 });
