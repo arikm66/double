@@ -301,7 +301,17 @@ function ImportManager({ isAdmin, onError, onImportComplete }) {
               </div>
               <div className="results-info">
                 <p><strong>Duration:</strong> {importResults.duration}</p>
-                <p><strong>Log file:</strong> {importResults.logFile}</p>
+                <p>
+                  <strong>Log file:</strong>{' '}
+                  <a
+                    href={`/api/utils/file/${importResults.logFile}`}
+                    download={importResults.logFile}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {importResults.logFile}
+                  </a>
+                </p>
                 <p className="log-note">Log file saved on server in the server root directory</p>
               </div>
             </div>
