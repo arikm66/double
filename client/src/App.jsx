@@ -9,7 +9,7 @@ import DataManagement from './components/DataManagement'
 import UserManagement from './components/UserManagement'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
-import Utils from './components/utils'
+import Utils from './components/Utils'
 import './App.css'
 
 function App() {
