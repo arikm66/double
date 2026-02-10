@@ -1,3 +1,4 @@
+const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -32,6 +33,7 @@ const nounRoutes = require('./routes/nouns');
 const categoryRoutes = require('./routes/categories');
 const userRoutes = require('./routes/users');
 const importRoutes = require('./routes/import');
+const utilRoutes = require('./routes/utils');
 
 
 
@@ -44,6 +46,7 @@ app.use('/api/nouns', nounRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/import', importRoutes);
+app.use('/api/utils', utilRoutes);
 
 // Serve static files from client build in production (after API routes)
 if (process.env.NODE_ENV === 'production') {
