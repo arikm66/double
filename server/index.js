@@ -33,6 +33,8 @@ const nounRoutes = require('./routes/nouns');
 const categoryRoutes = require('./routes/categories');
 const userRoutes = require('./routes/users');
 const importRoutes = require('./routes/import');
+
+const packRoutes = require('./routes/packs');
 const utilRoutes = require('./routes/utils');
 
 
@@ -46,6 +48,7 @@ app.use('/api/nouns', nounRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/import', importRoutes);
+app.use('/api/packs', packRoutes);
 app.use('/api/utils', utilRoutes);
 
 // Serve static files from client build in production (after API routes)
