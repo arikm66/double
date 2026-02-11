@@ -10,7 +10,9 @@ import UserManagement from './components/UserManagement'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import UtilsManagement from './components/UtilsManagement/UtilsManagement'
-import PacksManagement from './components/PacksManagement/PacksManagement';
+import PacksList from './components/PacksManagement/PacksList';
+import PackEdit from './components/PacksManagement/PackEdit';
+import PackCreate from './components/PacksManagement/PackCreate';
 import './App.css'
 
 function App() {
@@ -94,7 +96,15 @@ function App() {
       />
       <Route 
         path="/packs" 
-        element={<PacksManagement />} 
+        element={<PacksList />} 
+      />
+      <Route
+        path="/packs/create"
+        element={<PackCreate />}
+      />
+      <Route
+        path="/packs/:id/edit"
+        element={<PackEdit />}
       />
     </Routes>
   )
