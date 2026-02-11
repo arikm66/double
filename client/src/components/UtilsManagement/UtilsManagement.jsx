@@ -36,10 +36,7 @@ function UtilsManagement() {
 					<button className="utils-back-button" onClick={() => navigate('/manage')}>
 						← Back to Manage
 					</button>
-					<h1>UtilsManagement</h1>
-				</div>
-				<div className="utils-description">
-					Admin utilities and server files
+					<h1>Utils Management</h1>
 				</div>
 			</div>
 			<div className="utils-content utils-flex">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 function ImageRetrieval() {
     const [data, setData] = useState(null);
@@ -6,8 +6,31 @@ function ImageRetrieval() {
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
     const [status, setStatus] = useState('');
+    const [folderFiles, setFolderFiles] = useState([]);
+    const [folderName, setFolderName] = useState('');
+    const folderInputRef = React.useRef(null);
 
-    useEffect(() => {
+    const handleFolderChange = (e) => {
+        const files = Array.from(e.target.files);
+        setFolderFiles(files);
+        if (files.length > 0) {
+            const fakePath = files[0].webkitRelativePath || files[0].name;
+            const folder = fakePath.split('/')[0];
+            setFolderName(folder);
+        } else {
+            setFolderName('');
+        }
+    };
+
+    const clearFolder = () => {
+        setFolderFiles([]);
+        setFolderName('');
+        if (folderInputRef.current) {
+            folderInputRef.current.value = '';
+        }
+    };
+
+    const handleRetrieve = () => {
         let isMounted = true;
         setLoading(true);
         setError('');
@@ -73,14 +96,43 @@ function ImageRetrieval() {
                 setError(err.message || 'Failed to fetch image retrieval data');
                 setLoading(false);
             });
-        return () => {
-            isMounted = false;
-        };
-    }, []);
+    };
 
     return (
-        <div>
-            <h3>Image Retrieval</h3>
+        <div className="import-section">
+            <div className="import-upload">
+                <div className="form-group">
+                    <label>Select Images Folder</label>
+                    <input
+                        ref={folderInputRef}
+                        type="file"
+                        webkitdirectory="true"
+                        directory="true"
+                        multiple
+                        onChange={handleFolderChange}
+                        disabled={loading}
+                    />
+                    {folderFiles.length > 0 && (
+                        <div className="file-info">
+                            <span>📁 {folderName}</span>
+                            <button
+                                onClick={clearFolder}
+                                className="clear-file-btn"
+                                disabled={loading}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    )}
+                </div>
+                <button
+                    onClick={handleRetrieve}
+                    className="import-btn"
+                    disabled={folderFiles.length === 0 || loading}
+                >
+                    {loading ? '⏳ Retrieving...' : '📂 Retrieve'}
+                </button>
+            </div>
             {loading && <div>Loading...</div>}
             {status && <div>Status: {status}</div>}
             {typeof progress === 'number' && progress < 1 && (
