@@ -1,10 +1,28 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import Navbar from '../Navbar';
 import ServerFileList from './ServerFileList';
 import './UtilsManagement.css';
 
 function UtilsManagement() {
 	const navigate = useNavigate();
+	const [selectedUtil, setSelectedUtil] = useState('ServerFileList');
+
+	// Add more utils here as needed
+	const utils = [
+		{
+			key: 'ServerFileList',
+			label: 'Server File List',
+			component: <ServerFileList />,
+		},
+		// Future utils can be added here
+	];
+
+	const renderUtil = () => {
+		const util = utils.find(u => u.key === selectedUtil);
+		return util ? util.component : <div>Select a util from the sidebar</div>;
+	};
+
 	return (
 		<div className="utils-container">
 			<Navbar />
@@ -19,9 +37,20 @@ function UtilsManagement() {
 					Admin utilities and server files
 				</div>
 			</div>
-			<div className="utils-content">
+			<div className="utils-content utils-flex">
+				<div className="utils-sidebar">
+					{utils.map(util => (
+						<button
+							key={util.key}
+							className={`utils-sidebar-btn${selectedUtil === util.key ? ' selected' : ''}`}
+							onClick={() => setSelectedUtil(util.key)}
+						>
+							{util.label}
+						</button>
+					))}
+				</div>
 				<div className="utils-card">
-					<ServerFileList />
+					{renderUtil()}
 				</div>
 			</div>
 		</div>
