@@ -214,16 +214,19 @@ function UserManagement() {
                     <td className="role-cell">{user.role}</td>
                     <td>
                       <button
-                        className="edit-btn"
+                        className="icon-btn"
+                        title="Edit User"
+                        style={{ marginRight: 8 }}
                         onClick={() => openEditModal(user)}
                       >
-                        Edit
+                        <span role="img" aria-label="edit">✏️</span>
                       </button>
                       <button
-                        className="delete-btn"
+                        className="icon-btn delete-btn"
+                        title="Delete User"
                         onClick={() => handleDelete(user._id)}
                       >
-                        Delete
+                        <span role="img" aria-label="delete">🗑️</span>
                       </button>
                     </td>
                   </tr>

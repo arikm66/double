@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import './ConfirmDialog.css';
 
-const ConfirmDialog = ({ message, onConfirm, onCancel }) => {
+
+const ConfirmDialog = ({ message, onConfirm, onCancel, showDontAskAgain = true }) => {
   const [dontAskAgain, setDontAskAgain] = useState(false);
 
   const handleConfirm = () => {
@@ -17,16 +18,18 @@ const ConfirmDialog = ({ message, onConfirm, onCancel }) => {
         <div className="confirm-content">
           <h3>Confirm Delete</h3>
           <p>{message}</p>
-          <div className="confirm-checkbox">
-            <label>
-              <input
-                type="checkbox"
-                checked={dontAskAgain}
-                onChange={(e) => setDontAskAgain(e.target.checked)}
-              />
-              <span>Don't ask me again</span>
-            </label>
-          </div>
+          {showDontAskAgain && (
+            <div className="confirm-checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={dontAskAgain}
+                  onChange={(e) => setDontAskAgain(e.target.checked)}
+                />
+                <span>Don't ask me again</span>
+              </label>
+            </div>
+          )}
         </div>
         <div className="confirm-actions">
           <button onClick={onCancel} className="btn-cancel">

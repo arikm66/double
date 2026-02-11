@@ -44,7 +44,14 @@ function Navbar() {
           </NavLink>
         </div>
         <div className="navbar-actions">
-          <span className="navbar-user">{user?.username}</span>
+          <span className="navbar-user">
+            {user?.username}
+            {user?.role && (
+              <span style={{ marginLeft: 8, color: '#bbb', fontWeight: 500 }}>
+                ({user.role.charAt(0).toUpperCase() + user.role.slice(1)})
+              </span>
+            )}
+          </span>
           <button type="button" onClick={handleLogout} className="navbar-link-button">
             Log out
           </button>

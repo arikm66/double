@@ -100,7 +100,7 @@ function PacksList() {
           <h1 style={{ margin: 0 }}>Packs Management</h1>
           <div className="header-buttons">
             <button className="primary-button" onClick={() => navigate('/packs/create')}>
-              + Add Pack
+              + Create Pack
             </button>
           </div>
         </div>
@@ -162,6 +162,7 @@ function PacksList() {
           message={packToDelete ? `Are you sure you want to delete the pack "${packToDelete.name}"? This cannot be undone.` : ''}
           onConfirm={performDeletePack}
           onCancel={cancelDeletePack}
+          showDontAskAgain={false}
         />
       )}
     </div>
