@@ -9,8 +9,8 @@ import DataManagement from './components/DataManagement/DataManagement'
 import UserManagement from './components/UserManagement'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
-import Utils from './components/Utils/Utils'
-import PacksManager from './components/PacksManager/PacksManager';
+import UtilsManagement from './components/UtilsManagement/UtilsManagement'
+import PacksManagement from './components/PacksManagement/PacksManagement';
 import './App.css'
 
 function App() {
@@ -88,13 +88,13 @@ function App() {
         path="/utils" 
         element={
           <AdminRoute>
-            <Utils />
+            <UtilsManagement />
           </AdminRoute>
         } 
       />
       <Route 
         path="/packs" 
-        element={<PacksManager />} 
+        element={<PacksManagement />} 
       />
     </Routes>
   )

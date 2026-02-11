@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar';
 import ServerFileList from './ServerFileList';
-import './Utils.css';
+import './UtilsManagement.css';
 
-function Utils() {
+function UtilsManagement() {
 	const navigate = useNavigate();
 	return (
 		<div className="utils-container">
@@ -13,7 +13,7 @@ function Utils() {
 					<button className="utils-back-button" onClick={() => navigate('/manage')}>
 						← Back to Manage
 					</button>
-					<h1>Utils</h1>
+					<h1>UtilsManagement</h1>
 				</div>
 				<div className="utils-description">
 					Admin utilities and server files
@@ -28,4 +28,4 @@ function Utils() {
 	);
 }
 
-export default Utils;
+export default UtilsManagement;

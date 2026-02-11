@@ -39,9 +39,9 @@ const deletePack = async (id) => {
 import Navbar from '../Navbar';
 import { useAuth } from '../../context/AuthContext';
 import ConfirmDialog from '../ConfirmDialog';
-import './PacksManager.css';
+import './PacksManagement.css';
 
-function PacksManager() {
+function PacksManagement() {
   const [packs, setPacks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -156,4 +156,4 @@ function PacksManager() {
   );
 }
 
-export default PacksManager;
+export default PacksManagement;
