@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import Navbar from '../Navbar';
 import ServerFileList from './ServerFileList';
+import ImageRetrieval from './ImageRetrieval';
 import './UtilsManagement.css';
 
 function UtilsManagement() {
@@ -15,7 +16,11 @@ function UtilsManagement() {
 			label: 'Server File List',
 			component: <ServerFileList />,
 		},
-		// Future utils can be added here
+		{
+			key: 'ImageRetrieval',
+			label: 'Image Retrieval',
+			component: <ImageRetrieval />,
+		},
 	];
 
 	const renderUtil = () => {

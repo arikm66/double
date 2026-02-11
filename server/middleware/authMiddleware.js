@@ -32,9 +32,7 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-module.exports = authMiddleware;
-
-module.exports.requireAdmin = async (req, res, next) => {
+const requireAdmin = async (req, res, next) => {
   try {
     if (!req.userId) {
       return res.status(401).json({ message: 'Not authorized' });
@@ -54,3 +52,5 @@ module.exports.requireAdmin = async (req, res, next) => {
     res.status(500).json({ message: 'Authorization failed' });
   }
 };
+
+module.exports = { authMiddleware, requireAdmin };

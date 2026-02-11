@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middleware/authMiddleware');
+const { authMiddleware, requireAdmin } = require('../middleware/authMiddleware');
 const importController = require('../controllers/importController');
 
 // Import nouns from JSON (admin only)
 router.post(
   '/nouns',
   authMiddleware,
-  authMiddleware.requireAdmin,
+  requireAdmin,
   importController.importNouns
 );
 
@@ -15,7 +15,7 @@ router.post(
 router.post(
   '/nouns-sse',
   authMiddleware,
-  authMiddleware.requireAdmin,
+  requireAdmin,
   importController.importNounsSSE
 );
 

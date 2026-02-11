@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const packController = require('../controllers/packController');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authMiddleware, requireAdmin } = require('../middleware/authMiddleware');
 
 // Public routes
 router.get('/', packController.getAllPacks);

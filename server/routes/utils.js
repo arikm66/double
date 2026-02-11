@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const router = express.Router();
 
-const authMiddleware = require('../middleware/authMiddleware');
-const { requireAdmin } = require('../middleware/authMiddleware');
+const { authMiddleware, requireAdmin } = require('../middleware/authMiddleware');
+const { imageRetrieval } = require('../controllers/utilsController');
 
 // List files in server folder (admin only)
 router.get('/list', authMiddleware, requireAdmin, (req, res) => {
@@ -33,5 +33,9 @@ router.get('/file/:filename', (req, res) => {
     }
   });
 });
+
+
+// Image retrieval util
+router.get('/imageret', imageRetrieval);
 
 module.exports = router;
