@@ -15,7 +15,16 @@ const authMiddleware = (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.id;
-    next();
+    // Populate req.user with full user object for downstream use
+    User.findById(decoded.id).then(user => {
+      if (!user) {
+        return res.status(401).json({ message: 'User not found' });
+      }
+      req.user = user;
+      next();
+    }).catch(() => {
+      res.status(401).json({ message: 'User not found' });
+    });
   } catch (error) {
     res.status(401).json({ 
       message: 'Token is not valid' 

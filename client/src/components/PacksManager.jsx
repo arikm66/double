@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { fetchAllPacks } from '../api';
+import { fetchAllPacks, deletePack } from '../api';
 import Navbar from './Navbar';
 import { useAuth } from '../context/AuthContext';
 import './PacksManager.css';
@@ -9,7 +9,20 @@ function PacksManager() {
   const [packs, setPacks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
   const { user } = useAuth();
+  const handleDeletePack = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to delete the pack "${name}"? This cannot be undone.`)) return;
+    setDeletingId(id);
+    setError('');
+    try {
+      await deletePack(id);
+      setPacks(prev => prev.filter(p => p._id !== id));
+    } catch (err) {
+      setError(err.message || 'Failed to delete pack');
+    }
+    setDeletingId(null);
+  };
 
   useEffect(() => {
     const getPacks = async () => {
@@ -59,7 +72,12 @@ function PacksManager() {
                           <span role="img" aria-label="edit">✏️</span>
                         </button>
                         {canDelete && (
-                          <button className="icon-btn" title="Delete Pack">
+                          <button
+                            className="icon-btn delete-btn"
+                            title="Delete Pack"
+                            onClick={() => handleDeletePack(pack._id, pack.name)}
+                            disabled={deletingId === pack._id}
+                          >
                             <span role="img" aria-label="delete">🗑️</span>
                           </button>
                         )}
