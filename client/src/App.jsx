@@ -5,11 +5,11 @@ import Register from './components/Register'
 import Dashboard from './components/Dashboard'
 import Manage from './components/Manage'
 import Play from './components/Play'
-import DataManagement from './components/DataManagement'
+import DataManagement from './components/DataManagement/DataManagement'
 import UserManagement from './components/UserManagement'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
-import Utils from './components/Utils'
+import Utils from './components/Utils/Utils'
 import PacksManager from './components/PacksManager/PacksManager';
 import './App.css'
 
