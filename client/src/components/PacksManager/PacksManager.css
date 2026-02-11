@@ -1,13 +1,12 @@
+/* PacksManager styles moved here */
+
 .delete-btn span[role="img"][aria-label="delete"] {
   color: #e53935;
   filter: drop-shadow(0 0 2px #e53935);
 }
-/* Add margin below the Packs Management header */
 .packs-header {
   margin-bottom: 32px;
 }
-
-/* Simple horizontal row of cards, left-aligned, with margin */
 .packs-grid {
   display: flex;
   flex-wrap: wrap;
@@ -15,7 +14,6 @@
   margin-top: 68px;
   align-items: flex-start;
 }
-
 .packs-card {
   background: white;
   border-radius: 50%;
@@ -34,7 +32,6 @@
   overflow: hidden;
   padding: 0;
 }
-
 .manage-card-header {
   display: flex;
   flex-direction: column;
@@ -46,7 +43,6 @@
   text-align: center;
   width: 100%;
 }
-
 .icon-btn {
   background: none;
   border: none;

@@ -10,7 +10,7 @@ import UserManagement from './components/UserManagement'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import Utils from './components/Utils'
-import PacksManager from './components/PacksManager'
+import PacksManager from './components/PacksManager/PacksManager';
 import './App.css'
 
 function App() {

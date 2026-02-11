@@ -1,8 +1,44 @@
-
 import { useEffect, useState } from 'react';
-import { fetchAllPacks, deletePack } from '../api';
-import Navbar from './Navbar';
-import { useAuth } from '../context/AuthContext';
+// API functions implemented locally
+
+const fetchAllPacks = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch('/api/packs', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch packs');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching packs:', error);
+    throw error;
+  }
+};
+
+const deletePack = async (id) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/packs/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || 'Failed to delete pack');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error deleting pack:', error);
+    throw error;
+  }
+};
+import Navbar from '../Navbar';
+import { useAuth } from '../../context/AuthContext';
+import ConfirmDialog from '../ConfirmDialog';
 import './PacksManager.css';
 
 function PacksManager() {
@@ -10,18 +46,33 @@ function PacksManager() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [deletingId, setDeletingId] = useState(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [packToDelete, setPackToDelete] = useState(null);
   const { user } = useAuth();
-  const handleDeletePack = async (id, name) => {
-    if (!window.confirm(`Are you sure you want to delete the pack "${name}"? This cannot be undone.`)) return;
-    setDeletingId(id);
+
+  const handleDelete = (id, name) => {
+    setPackToDelete({ id, name });
+    setShowConfirmDialog(true);
+  };
+
+  const performDelete = async () => {
+    if (!packToDelete) return;
+    setDeletingId(packToDelete.id);
     setError('');
     try {
-      await deletePack(id);
-      setPacks(prev => prev.filter(p => p._id !== id));
+      await deletePack(packToDelete.id);
+      setPacks(prev => prev.filter(p => p._id !== packToDelete.id));
     } catch (err) {
       setError(err.message || 'Failed to delete pack');
     }
     setDeletingId(null);
+    setShowConfirmDialog(false);
+    setPackToDelete(null);
+  };
+
+  const cancelDeletePack = () => {
+    setShowConfirmDialog(false);
+    setPackToDelete(null);
   };
 
   useEffect(() => {
@@ -75,7 +126,7 @@ function PacksManager() {
                           <button
                             className="icon-btn delete-btn"
                             title="Delete Pack"
-                            onClick={() => handleDeletePack(pack._id, pack.name)}
+                            onClick={() => handleDelete(pack._id, pack.name)}
                             disabled={deletingId === pack._id}
                           >
                             <span role="img" aria-label="delete">🗑️</span>
@@ -94,6 +145,13 @@ function PacksManager() {
           </div>
         )}
       </div>
+      {showConfirmDialog && (
+        <ConfirmDialog
+          message={packToDelete ? `Are you sure you want to delete the pack "${packToDelete.name}"? This cannot be undone.` : ''}
+          onConfirm={performDelete}
+          onCancel={cancelDeletePack}
+        />
+      )}
     </div>
   );
 }
