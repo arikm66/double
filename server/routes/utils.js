@@ -35,7 +35,7 @@ router.get('/file/:filename', (req, res) => {
 });
 
 
-// Image retrieval util
-router.get('/imageret', imageRetrieval);
+// Image retrieval util (admin only)
+router.get('/imageret', authMiddleware, requireAdmin, imageRetrieval);
 
 module.exports = router;
