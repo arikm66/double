@@ -74,13 +74,11 @@ async function matchImages(processedNames, allNouns, bucket) {
             return null;
         }).filter(Boolean)
     );
-    console.log('usedImageNames:', Array.from(usedImageNames));
     const results = [];
 
     for (const file of processedNames) {
         const fileNameLower = file.original.replace(/^nouns\//, '').toLowerCase();
         if (file.status === 'VALID') {
-            console.log(`Checking VALID file: ${file.original}, descriptor: ${file.descriptor}`);
             if (usedImageNames.has(fileNameLower)) {
                 // Image is used by a noun, keep it
                 results.push({ ...file, action: 'KEEP' });
@@ -118,6 +116,30 @@ async function matchImages(processedNames, allNouns, bucket) {
                     results.push({ ...file, action: 'REMOVE_FAILED_NO_MATCH', error: err.message });
                 }
             }
+        }
+    }
+    return results;
+}
+
+async function cleanUrls(processedNames, allNouns, bucket) {
+    // Build a set of all file names present in storage (from processedNames)
+    const storageFileNames = new Set(processedNames.map(f => f.original.replace(/^nouns\//, '').toLowerCase()));
+    const results = [];
+
+    for (const noun of allNouns) {
+        let imageUrl = noun.imageUrl;
+        let fileName = null;
+        if (imageUrl && imageUrl !== "") {
+            // Extract file name from imageUrl (look for 'nouns/' not 'nouns%2F')
+            const match = decodeURIComponent(imageUrl).match(/nouns\/([^?]+)/);
+            if (match && match[1]) {
+                fileName = match[1].toLowerCase();
+            }
+        }
+        if (fileName && !storageFileNames.has(fileName)) {
+            // No file found in storage, set imageUrl to empty string
+            await Noun.updateOne({ _id: noun._id }, { imageUrl: "" });
+            results.push({ nounId: noun._id, oldUrl: imageUrl, newUrl: "" });
         }
     }
     return results;
@@ -228,7 +250,8 @@ exports.nounImaging = async (req, res) => {
         // Get all nouns from the database
         const allNouns = await Noun.find();
         const matchedImages = await matchImages(processedNames, allNouns, bucket);
-        res.status(200).json({ files: matchedImages });
+        const cleanedUrls = await cleanUrls(processedNames, allNouns, bucket);
+        res.status(200).json({ files: matchedImages , cleanedUrls});
     } catch (err) {
         res.status(500).json({ error: 'Noun imaging util failed.', details: err.message });
     }
