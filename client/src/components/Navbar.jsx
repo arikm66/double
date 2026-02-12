@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
+import { VERSION } from '../version';
 
 function Navbar() {
   const navigate = useNavigate();
@@ -22,6 +23,9 @@ function Navbar() {
           >
             Double Cards Game
           </button>
+          <span style={{ marginLeft: 12, fontSize: 13, color: '#888', fontWeight: 500 }}>
+            v{VERSION}
+          </span>
         </div>
         <div className="navbar-links">
           <NavLink
