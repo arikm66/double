@@ -17,4 +17,7 @@ router.get('/file/:filename', authMiddleware, requireAdmin, utilsController.serv
 // Image retrieval util (admin only)
 router.get('/imageret', authMiddleware, requireAdmin, utilsController.imageRetrieval);
 
+// Noun imaging util (admin only)
+router.get('/nounimaging', authMiddleware, requireAdmin, utilsController.nounImaging);
+
 module.exports = router;

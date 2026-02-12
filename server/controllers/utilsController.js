@@ -92,3 +92,12 @@ exports.serveFile = (req, res) => {
         }
     });
 };
+
+exports.nounImaging = async (req, res) => {
+    try {
+        // Placeholder logic for noun imaging
+        res.status(200).json({ message: 'Noun imaging util executed successfully.' });
+    } catch (err) {
+        res.status(500).json({ error: 'Noun imaging util failed.', details: err.message });
+    }
+};

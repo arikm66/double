@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Navbar from '../Navbar';
 import ServerFileList from './ServerFileList';
 import ImageRetrieval from './ImageRetrieval';
+import NounImaging from './NounImaging';
 import './UtilsManagement.css';
 
 function UtilsManagement() {
@@ -20,6 +21,11 @@ function UtilsManagement() {
 			key: 'ImageRetrieval',
 			label: 'Image Retrieval',
 			component: <ImageRetrieval />,
+		},
+		{
+			key: 'NounImaging',
+			label: 'Noun Imaging',
+			component: <NounImaging />,
 		},
 	];
 
