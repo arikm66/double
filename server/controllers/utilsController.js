@@ -2,6 +2,8 @@
 
 // Placeholder for image retrieval logic
 const Noun = require('../models/Noun');
+const fs = require('fs');
+const path = require('path');
 
 exports.imageRetrieval = async (req, res) => {
     let status = '';
@@ -66,4 +68,27 @@ exports.imageRetrieval = async (req, res) => {
         });
         res.end();
     }
+};
+
+exports.listFiles = (req, res) => {
+    const dirPath = path.join(__dirname, '..');
+    fs.readdir(dirPath, { withFileTypes: true }, (err, items) => {
+        if (err) {
+            return res.status(500).json({ error: 'Unable to list files' });
+        }
+        const files = items.map(item => ({
+            name: item.name,
+            type: item.isDirectory() ? 'folder' : 'file'
+        }));
+        res.json({ files });
+    });
+};
+
+exports.serveFile = (req, res) => {
+    const filePath = path.join(__dirname, '..', req.params.filename);
+    res.sendFile(filePath, err => {
+        if (err) {
+            res.status(404).json({ error: 'File not found' });
+        }
+    });
 };
