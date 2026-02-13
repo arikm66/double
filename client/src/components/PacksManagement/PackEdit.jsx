@@ -9,6 +9,8 @@ function PackEdit() {
   const [pack, setPack] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [name, setName] = useState('');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchPack = async () => {
@@ -24,6 +26,7 @@ function PackEdit() {
         if (!response.ok) throw new Error('Failed to fetch pack');
         const data = await response.json();
         setPack(data);
+        setName(data.name || '');
       } catch (err) {
         setError('Failed to fetch pack');
       }
@@ -31,6 +34,29 @@ function PackEdit() {
     };
     fetchPack();
   }, [id]);
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!pack) return;
+    setSaving(true);
+    setError('');
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/packs/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ name })
+      });
+      if (!response.ok) throw new Error('Failed to save pack');
+      navigate('/packs');
+    } catch (err) {
+      setError('Failed to save pack');
+    }
+    setSaving(false);
+  };
 
   return (
     <div className="user-management-container">
@@ -52,12 +78,30 @@ function PackEdit() {
           ) : !pack ? (
             <p>Pack not found.</p>
           ) : (
-            <>
-              <p>Pack editing UI for pack ID: <b>{id}</b> goes here.</p>
-              <p><b>Name:</b> {pack.name}</p>
-              <p><b>Creator:</b> {pack.creator?.username || 'N/A'}</p>
-              <p><b>Cards:</b> {pack.cards?.length ?? 0}</p>
-            </>
+            <form onSubmit={handleSave}>
+                <div className="form-row">
+                  <label htmlFor="pack-name">Name:</label>
+                  <input
+                    id="pack-name"
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    required
+                  />
+                  <button type="submit" className="save-btn inline-save" disabled={saving}>
+                    {saving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              <div className="form-row">
+                <label>Creator:</label>
+                <span>{pack.creator?.username || 'N/A'}</span>
+              </div>
+              <div className="form-row">
+                <label>Cards:</label>
+                <span>{pack.cards?.length ?? 0}</span>
+              </div>
+
+            </form>
           )}
         </div>
       </div>

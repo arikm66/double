@@ -14,6 +14,65 @@
   margin-top: 68px;
   align-items: flex-start;
 }
+
+/* Edit form placement: provide a clear gap from the sticky header */
+.user-management-content {
+  max-width: 2200px; /* allow wider content area for packs pages so form percent width can expand */
+}
+
+.packs-edit-form {
+  margin: 140px auto 40px auto; /* push the form lower on the page */
+  width: 90%;
+  max-width: none;
+  background: white;
+  padding: 22px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  box-sizing: border-box;
+}
+
+/* Horizontal form row: label and input adjacent */
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* reduced gap so inputs sit closer to labels */
+  margin-bottom: 16px;
+}
+.form-row label {
+  min-width: 80px; /* reduced from 110px so values move left */
+  margin: 0;
+  font-weight: 600;
+}
+.form-row input,
+.form-row select {
+  /* limit width so inputs don't stretch full row and use app-standard visual style */
+  flex: 0 1 420px;
+  max-width: 420px;
+  padding: 10px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 5px;
+  background: white;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-row input:focus,
+.form-row select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102,126,234,0.06);
+}
+
+/* Inline save button to place next to inputs */
+.inline-save {
+  flex: 0 0 auto;
+  margin-left: 12px;
+  padding: 8px 12px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .packs-card {
   background: white;
   border-radius: 50%;
