@@ -38,6 +38,35 @@ textarea{width:100%;min-height:120px;font-family:monospace}
 /* Active navbar item customization (HeroUI adds `data-active`) */
 [data-active] { color: var(--deep-ocean) !important; font-weight: 600; }
 
+/* Hide HeroUI TabPanels when using the `no-panel` utility class (we render panels manually) */
+.no-panel [data-slot="panel"] { display: none !important; }
+
+/* Hide horizontal scrollbar for HeroUI tab lists inside `.no-panel` while keeping scroll behavior */
+.no-panel [data-slot="tabList"] {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;    /* Firefox */
+}
+.no-panel [data-slot="tabList"]::-webkit-scrollbar {
+  height: 0; /* Chrome/Safari */
+  background: transparent;
+}
+
+/* Selected tab styling to make active tab obvious */
+.no-panel [data-slot="tab"] {
+  padding-bottom: 6px; /* reserve space for the bottom indicator */
+  border-bottom: 4px solid transparent;
+  transition: border-color .15s ease, color .12s ease;
+}
+.no-panel [data-slot="tab"][data-selected="true"],
+.no-panel [data-slot="tab"][aria-selected="true"] {
+  color: var(--deep-ocean) !important;
+  font-weight: 800;
+  border-bottom-color: var(--primary-mint) !important;
+}
+.no-panel [data-slot="tab"]:not([data-selected="true"]) {
+  color: rgba(29,53,87,0.65);
+}
+
 /* Fallback float animation for environments where Tailwind animation isn't available
    Respects user 'prefers-reduced-motion' */
 @keyframes float {
