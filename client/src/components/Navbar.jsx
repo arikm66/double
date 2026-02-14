@@ -12,11 +12,13 @@ import {
 } from '@heroui/react'
 import DoubleLogo from './DoubleLogo'
 import { useAuth } from '../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 export default function AppNavbar() {
   const [active, setActive] = useState('Home')
   const [menuOpen, setMenuOpen] = useState(false)
   const auth = useAuth()
+  const navigate = useNavigate()
 
   // menu items vary by auth state & role
   const links = auth.user
@@ -33,6 +35,19 @@ export default function AppNavbar() {
   React.useEffect(() => {
     if (!links.includes(active)) setActive(links[0] || '')
   }, [auth.user])
+
+  const routeForLabel = (label) => {
+    if (label === 'Word Packs') return '/word-packs'
+    if (label === 'Dashboard') return '/'
+    if (label === 'Home') return '/'
+    return null
+  }
+
+  const handleNav = (label) => {
+    setActive(label)
+    const p = routeForLabel(label)
+    if (p) navigate(p)
+  }
 
   return (
     <Navbar 
@@ -52,7 +67,7 @@ export default function AppNavbar() {
           <NavbarItem
             key={label}
             isActive={active === label}
-            onClick={() => setActive(label)}
+            onClick={() => handleNav(label)}
             className="cursor-pointer text-sm leading-none font-medium text-deep-ocean/80 hover:text-deep-ocean transition-colors"
           >
             {label}
@@ -90,7 +105,7 @@ export default function AppNavbar() {
 
       <NavbarMenu>
         {links.map((label) => (
-          <NavbarMenuItem key={label} onClick={() => { setActive(label); setMenuOpen(false) }}>
+          <NavbarMenuItem key={label} onClick={() => { handleNav(label); setMenuOpen(false) }}>
             {label}
           </NavbarMenuItem>
         ))}

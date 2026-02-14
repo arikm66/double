@@ -3,22 +3,21 @@ import AppNavbar from './components/Navbar'
 import Home from './routes/Home'
 import LoginModal from './components/LoginModal'
 import Footer from './components/Footer'
+import WordPacks from './components/WordPacks'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 export default function App() {
   return (
-    <>
+    <BrowserRouter>
       <AppNavbar />
       <LoginModal />
-      {/* Home is full-width and should sit outside the centered .app container */}
-      <Home />
 
-      <div className="app">
-        <main>
-          {/* other centered content (if any) can remain here */}
-        </main>
-      </div>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/word-packs" element={<WordPacks />} />
+      </Routes>
 
       <Footer />
-    </>
+    </BrowserRouter>
   )
 }
