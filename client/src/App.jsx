@@ -9,11 +9,15 @@ export default function App() {
     <>
       <AppNavbar />
       <LoginModal />
+      {/* Home is full-width and should sit outside the centered .app container */}
+      <Home />
+
       <div className="app">
         <main>
-          <Home />
+          {/* other centered content (if any) can remain here */}
         </main>
       </div>
+
       <Footer />
     </>
   )

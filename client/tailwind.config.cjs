@@ -17,6 +17,15 @@ module.exports = {
       },
       boxShadow: {
         'soft-lg': '0 10px 30px rgba(29,53,87,0.08)'
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+          '50%': { transform: 'translateY(-20px) rotate(5deg)' }
+        }
+      },
+      animation: {
+        float: 'float 4s ease-in-out infinite'
       }
     }
   },

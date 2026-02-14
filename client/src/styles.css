@@ -38,3 +38,14 @@ textarea{width:100%;min-height:120px;font-family:monospace}
 /* Active navbar item customization (HeroUI adds `data-active`) */
 [data-active] { color: var(--deep-ocean) !important; font-weight: 600; }
 
+/* Fallback float animation for environments where Tailwind animation isn't available
+   Respects user 'prefers-reduced-motion' */
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+}
+.manual-float { animation: float 4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .manual-float { animation: none !important; }
+}
+
