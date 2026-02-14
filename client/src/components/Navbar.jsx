@@ -43,20 +43,12 @@ export default function AppNavbar() {
         ))}
       </NavbarContent>
 
-      <NavbarContent justify="end" className="gap-4 px-4">
+      <NavbarContent justify="end" className="gap-4 px-4 pr-6">
         <NavbarItem className="hidden md:flex">
           <Link href="#" color="foreground" className="text-sm font-semibold">Login</Link>
         </NavbarItem>
         <NavbarItem>
-          <Button
-            radius="full"
-            size="sm"
-            color="primary"
-            className="font-bold shadow-lg"
-            onPress={() => setActive('SignUp')}
-          >
-            Sign Up
-          </Button>
+          <Link href="#" color="foreground" className="text-sm font-semibold mr-2" onClick={() => setActive('Join Us')}>Join Us</Link>
         </NavbarItem>
         <NavbarMenuToggle className="sm:hidden" />
       </NavbarContent>
@@ -67,6 +59,12 @@ export default function AppNavbar() {
             {label}
           </NavbarMenuItem>
         ))}
+        <NavbarMenuItem>
+          <Link href="#" onClick={() => setMenuOpen(false)}>Login</Link>
+        </NavbarMenuItem>
+        <NavbarMenuItem>
+          <Link href="#" onClick={() => { setActive('Join Us'); setMenuOpen(false); }}>Join Us</Link>
+        </NavbarMenuItem>
       </NavbarMenu>
     </Navbar>
   )
