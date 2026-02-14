@@ -3,7 +3,7 @@ import AppNavbar from './components/Navbar'
 import Home from './routes/Home'
 import LoginModal from './components/LoginModal'
 import Footer from './components/Footer'
-import LibraryManagement from './components/LibraryManagement'
+import LibraryManagement from './components/LibraryManagement/LibraryManagement'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 export default function App() {

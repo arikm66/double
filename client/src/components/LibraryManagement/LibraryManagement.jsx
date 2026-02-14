@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Card, Switch, Button, Tabs, Tab } from '@heroui/react'
-import { request } from '../services/api'
-import { useAuth } from '../contexts/AuthContext'
+import { request } from '../../services/api'
+import { useAuth } from '../../contexts/AuthContext'
 
 const EMOJI_POOL = ['🍎','🐶','🚗','🍌','🐘','🏠','✈️','🧸','⚽','🐱','🐦','🐟','🪑','🛋️','🛏️','🥤','🥄','👟','🎩','📚','⏰','📱','🌳','🌸','🎸','🧢','🥛','🍪','🐷','🐮','🐑','🚆','🚚','🚲','🚤','🚪','🪟','🖊️','✏️','🍏','🍊','🍇','🎂','🍕','📷','💻','🎈','⭐','🌙','☀️','🌧️','🍃','🦋','🪨','🔑','🔒','🗺️','👞','👓','🕰️','📸','🍾','🍴','🔪','☂️']
 
