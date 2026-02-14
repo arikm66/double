@@ -12,10 +12,12 @@ export default function App() {
       <AppNavbar />
       <LoginModal />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/word-packs" element={<WordPacks />} />
-      </Routes>
+      <main className="w-full min-h-screen px-6">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/word-packs" element={<WordPacks />} />
+        </Routes>
+      </main>
 
       <Footer />
     </BrowserRouter>

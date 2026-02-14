@@ -8,7 +8,7 @@ export default function Home() {
 
   return (
     <div className="w-full bg-accent-sand pt-24 pb-20">
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="w-full">
         {/* Hero */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div className="space-y-6">

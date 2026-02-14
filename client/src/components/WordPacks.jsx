@@ -1,16 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Card, Switch, Button } from '@heroui/react'
 import { request } from '../services/api'
+import { useAuth } from '../contexts/AuthContext'
 
 const EMOJI_POOL = ['🍎','🐶','🚗','🍌','🐘','🏠','✈️','🧸','⚽','🐱','🐦','🐟','🪑','🛋️','🛏️','🥤','🥄','👟','🎩','📚','⏰','📱','🌳','🌸','🎸','🧢','🥛','🍪','🐷','🐮','🐑','🚆','🚚','🚲','🚤','🚪','🪟','🖊️','✏️','🍏','🍊','🍇','🎂','🍕','📷','💻','🎈','⭐','🌙','☀️','🌧️','🍃','🦋','🪨','🔑','🔒','🗺️','👞','👓','🕰️','📸','🍾','🍴','🔪','☂️']
 
 export default function WordPacks() {
+  const auth = useAuth()
   const [categories, setCategories] = useState([])
   const [loadingCategories, setLoadingCategories] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [nouns, setNouns] = useState([])
   const [loadingNouns, setLoadingNouns] = useState(false)
   const [query, setQuery] = useState('')
+  const [deletingId, setDeletingId] = useState(null)
 
   useEffect(() => {
     async function loadCategories() {
@@ -46,11 +49,32 @@ export default function WordPacks() {
 
   const pickEmoji = (index) => EMOJI_POOL[index % EMOJI_POOL.length]
 
+  const isAdmin = !!auth?.user?.role && auth.user.role === 'admin'
+
+  const handleDelete = async (id) => {
+    if (!isAdmin) return
+    const ok = window.confirm('Delete this noun? This cannot be undone.')
+    if (!ok) return
+    try {
+      setDeletingId(id)
+      const res = await request({ path: `/api/nouns/${id}`, method: 'DELETE' })
+      if (res.ok) {
+        setNouns(prev => prev.filter(n => n._id !== id))
+      } else {
+        alert(res.body?.message || 'Could not delete noun')
+      }
+    } catch (err) {
+      console.error('Delete noun error', err)
+      alert('Delete failed')
+    } finally {
+      setDeletingId(null)
+    }
+  }
   return (
-    <div className="w-full bg-accent-sand min-h-[60vh] py-12">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+    <div className="w-full bg-accent-sand min-h-screen py-12">
+      <div className="w-full flex flex-col lg:flex-row gap-8 lg:h-[calc(100vh-6rem)]">
         {/* Sidebar */}
-        <aside className="w-full rounded-2xl overflow-hidden shadow-sm bg-[#1d3557] text-white p-4 h-160 flex flex-col">
+        <aside className="w-full lg:w-72 rounded-2xl overflow-hidden shadow-sm bg-[#1d3557] text-white p-4 flex flex-col lg:h-[calc(100vh-6rem)]">
           <div className="mb-4">
             <input
               className="w-full rounded-md px-3 py-2 text-sm bg-[#153147] placeholder-slate-300"
@@ -60,7 +84,7 @@ export default function WordPacks() {
             />
           </div>
 
-          <div className="flex-1 overflow-auto space-y-2">
+          <div className="flex-1 overflow-y-auto space-y-2">
             {loadingCategories ? (
               <div className="text-sm text-slate-300">Loading categories...</div>
             ) : (
@@ -79,7 +103,7 @@ export default function WordPacks() {
         </aside>
 
         {/* Main content */}
-        <main className="bg-accent-sand rounded-2xl p-6">
+        <main className="w-full flex-1 p-6 flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-xl font-bold text-[#1d3557]">{selectedCategory ? selectedCategory.categoryHe : 'Select a category'}</h3>
@@ -90,7 +114,7 @@ export default function WordPacks() {
             </div>
           </div>
 
-          <div>
+          <div className="flex-1 overflow-y-auto pr-2 pb-6">
             {loadingNouns ? (
               <div className="text-sm text-slate-500">Loading nouns...</div>
             ) : nouns.length === 0 ? (
@@ -99,17 +123,54 @@ export default function WordPacks() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {nouns.map(noun => (
                   <Card key={noun._id} className="overflow-hidden">
-                    {noun.imageUrl ? (
-                      <img src={noun.imageUrl} alt={noun.nameEn} className="w-full h-32 object-cover" />
-                    ) : (
-                      <div className="w-full h-32 bg-white/80 flex items-center justify-center text-4xl">📦</div>
-                    )}
+                    <div className="w-full h-44 bg-white/80 overflow-hidden">
+                      {/* top action bar — reserved space so icons don't overlap artwork */}
+                      <div className="h-10 flex items-center justify-end px-3 pt-1">
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleDelete(noun._id)}
+                            disabled={deletingId === noun._id}
+                            title={`Delete ${noun.nameEn}`}
+                            aria-label={`Delete ${noun.nameEn}`}
+                            className="w-8 h-8 flex items-center justify-center rounded-full bg-white/95 text-red-600 shadow-sm hover:bg-white disabled:opacity-50"
+                          >
+                            {deletingId === noun._id ? (
+                              <svg className="w-4 h-4 animate-spin text-red-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                              </svg>
+                            ) : (
+                              <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H3a1 1 0 100 2h14a1 1 0 100-2h-2V3a1 1 0 00-1-1H6zm-1 6a1 1 0 011-1h8a1 1 0 011 1v7a2 2 0 01-2 2H7a2 2 0 01-2-2V8z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => {/* TODO: open edit modal / navigate */}}
+                          title={`Edit ${noun.nameEn}`}
+                          aria-label={`Edit ${noun.nameEn}`}
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-deep-ocean shadow-sm hover:bg-white"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828L7.828 15H5v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                      </div>
+
+                      <div className="flex-1 flex items-center justify-center pb-3">
+                        {noun.imageUrl ? (
+                          <img loading="lazy" src={noun.imageUrl} alt={noun.nameEn} className="max-w-full max-h-36 object-contain block" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-4xl">📦</div>
+                        )}
+                      </div>
+                    </div>
                     <div className="p-3">
                       <div className="font-semibold text-[#1d3557] text-sm">{noun.nameEn}</div>
                       <div className="text-xs text-slate-500">{noun.nameHe}</div>
-                      <div className="mt-3 flex justify-end">
-                        <Button size="sm" radius="full" className="text-sm">Edit</Button>
-                      </div>
+
                     </div>
                   </Card>
                 ))}
