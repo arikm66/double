@@ -19,8 +19,8 @@ export default function AppNavbar() {
   const links = ['Home', 'Features', 'Pricing', 'About']
 
   return (
-    <Navbar isBordered maxWidth="xl" className="mb-4" isMenuOpen={menuOpen} onMenuOpenChange={setMenuOpen}>
-      <NavbarBrand className="!px-4" aria-label="Double (Spot It!)">
+    <Navbar isBordered maxWidth="full" className="mb-4 w-full" isMenuOpen={menuOpen} onMenuOpenChange={setMenuOpen}>
+      <NavbarBrand className="px-6" aria-label="Double (Spot It!)">
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-md flex items-center justify-center font-bold"
@@ -36,7 +36,7 @@ export default function AppNavbar() {
         </div>
       </NavbarBrand>
 
-      <NavbarContent justify="center" className="hidden sm:flex">
+      <NavbarContent justify="center" className="hidden sm:flex px-6">
         {links.map((label) => (
           <NavbarItem
             key={label}
@@ -52,7 +52,7 @@ export default function AppNavbar() {
         ))}
       </NavbarContent>
 
-      <NavbarContent justify="end" className="!gap-2">
+      <NavbarContent justify="end" className="!gap-2 px-6">
         <NavbarItem>
           <Link href="#" color="foreground">Login</Link>
         </NavbarItem>
@@ -63,7 +63,7 @@ export default function AppNavbar() {
       </NavbarContent>
 
       {/* Mobile menu (collapses into hamburger) */}
-      <NavbarMenu>
+      <NavbarMenu className="px-6">
         {links.map((label) => (
           <NavbarMenuItem
             key={label}
