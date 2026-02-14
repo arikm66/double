@@ -38,6 +38,7 @@ export default function AppNavbar() {
 
   const routeForLabel = (label) => {
     if (label === 'Library Management') return '/lib-mgmt'
+    if (label === 'Admin Panel') return '/admin-panel'
     if (label === 'Dashboard') return '/'
     if (label === 'Home') return '/'
     return null
