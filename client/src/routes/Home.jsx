@@ -1,62 +1,73 @@
-import React, { useState } from 'react'
-import { request } from '../services/api'
+import React from 'react'
+import { Button, Card } from '@heroui/react'
 
 export default function Home() {
-  const [path, setPath] = useState('http://localhost:5000/')
-  const [method, setMethod] = useState('GET')
-  const [rawBody, setRawBody] = useState('')
-  const [response, setResponse] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-
-  async function send() {
-    setLoading(true)
-    setError(null)
-    setResponse(null)
-    let body = null
-    if (rawBody) {
-      try { body = JSON.parse(rawBody) } catch (err) { setError('Invalid JSON in request body'); setLoading(false); return }
-    }
-
-    try {
-      const res = await request({ path, method, body })
-      setResponse(res)
-    } catch (err) {
-      setError(err.message || String(err))
-    } finally { setLoading(false) }
-  }
+  // Placeholder tagline used because Landing2.html isn't in the workspace — change on request.
+  const tagline = 'Short, engaging activities to strengthen speech, language, and word‑finding skills.'
+  const categories = ['🍎','🐶','🚗','🍌','🐘','🏠','✈️','🧸']
 
   return (
-    <div className="card">
-      <div className="form-row">
-        <input className="input" value={path} onChange={e => setPath(e.target.value)} placeholder="Full URL or relative path (e.g. /api/packs)" />
-        <select value={method} onChange={e => setMethod(e.target.value)}>
-          <option>GET</option>
-          <option>POST</option>
-          <option>PUT</option>
-          <option>PATCH</option>
-          <option>DELETE</option>
-        </select>
-        <button className="button" onClick={send} disabled={loading}>{loading ? 'Sending...' : 'Send'}</button>
-      </div>
-
-      <div style={{marginBottom:8}}>
-        <label style={{color:'#9aa4b2',fontSize:13}}>Request body (JSON)</label>
-        <textarea value={rawBody} onChange={e => setRawBody(e.target.value)} placeholder='{"name":"foo"}' />
-      </div>
-
-      {error && <div className="resp" style={{background:'rgba(255,40,40,0.08)',color:'#ffb3b3'}}>{error}</div>}
-
-      {response && (
-        <div>
-          <div className="resp">
-            <strong>HTTP {response.status}</strong>
-            <div style={{marginTop:8}}>{typeof response.body === 'object' ? JSON.stringify(response.body, null, 2) : String(response.body)}</div>
+    <div className="w-full bg-accent-sand pt-24 pb-20">
+      <div className="max-w-6xl mx-auto px-6">
+        {/* Hero */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div className="space-y-6">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-[#1d3557]">
+              Making Speech Therapy <span className="text-deep-ocean">Playful.</span>
+            </h1>
+            <p className="text-lg text-[#1d3557] opacity-90">{tagline}</p>
+            <div>
+              <Button radius="full" size="lg" color="primary" className="shadow-lg">Start Therapy Session</Button>
+            </div>
           </div>
-        </div>
-      )}
 
-      <div className="footer">Tip: use a relative path starting with <code>/api/</code> to go through the dev proxy to <code>http://localhost:5000</code></div>
+          <div className="flex justify-center md:justify-end">
+            <Card className="w-64 h-64 rounded-full border-8 border-primary-mint bg-white flex items-center justify-center text-6xl shadow-md">
+              🐘
+            </Card>
+          </div>
+        </section>
+
+        {/* Benefits / Why Use */}
+        <section className="mt-12 text-center">
+          <h2 className="text-2xl font-bold text-[#1d3557]">Why Use Spot It?</h2>
+          <p className="text-sm text-slate-600 mt-2">Designed to target core skills through short, repeatable play.</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
+            <Card className="p-6 text-center">
+              <div className="text-3xl">🔊</div>
+              <h3 className="mt-4 font-semibold text-[#1d3557]">Phonological Retrieval</h3>
+              <p className="mt-2 text-sm text-slate-600">Boost word‑finding through rapid, engaging prompts.</p>
+            </Card>
+
+            <Card className="p-6 text-center">
+              <div className="text-3xl">👀</div>
+              <h3 className="mt-4 font-semibold text-[#1d3557]">Visual Discrimination</h3>
+              <p className="mt-2 text-sm text-slate-600">Train attention to small visual differences that support language.</p>
+            </Card>
+
+            <Card className="p-6 text-center">
+              <div className="text-3xl">🧠</div>
+              <h3 className="mt-4 font-semibold text-[#1d3557]">Category Recognition</h3>
+              <p className="mt-2 text-sm text-slate-600">Reinforce semantic grouping and retrieval in context.</p>
+            </Card>
+          </div>
+        </section>
+
+        {/* Symbol Library */}
+        <section className="mt-12 bg-white rounded-2xl p-6">
+          <h3 className="text-xl font-semibold text-[#1d3557]">Simple Categories. Concrete Nouns.</h3>
+          <p className="text-sm text-slate-600 mt-2">A compact library of common nouns across 70 categories.</p>
+
+          <div className="mt-4 flex flex-wrap gap-4">
+            {categories.map((c, i) => (
+              <div key={i} className="w-20 h-20 bg-[#f8faf9] rounded-xl flex items-center justify-center text-3xl border border-primary-mint">
+                {c}
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
   )
 }
