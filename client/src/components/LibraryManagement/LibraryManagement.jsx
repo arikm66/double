@@ -184,7 +184,7 @@ export default function LibraryManagement() {
                           </div>
 
                           <div className="flex-1 flex items-center justify-center pb-3">
-                            <div className="w-[90%] max-w-[9rem] border border-slate-200 rounded-md p-2 bg-white/80 flex items-center justify-center">
+                            <div className="w-[90%] max-w-36 border border-slate-200 rounded-md p-2 bg-white/80 flex items-center justify-center">
                               {noun.imageUrl ? (
                                 <img loading="lazy" src={noun.imageUrl} alt={noun.nameEn} className="max-w-full max-h-28 object-contain block" />
                               ) : (
