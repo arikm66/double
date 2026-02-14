@@ -49,10 +49,11 @@ export default function NounImaging() {
   const renderActionChip = (action) => {
     if (!action) return null
     const a = String(action).toUpperCase()
-    if (a === 'KEEP') return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800">Keep</span>
-    if (a.includes('RENAME') || a.includes('RENAMED') || a.includes('UPDATED') || a.includes('REPAIRED')) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">{action}</span>
-    if (a.includes('REMOVE') || a.includes('REMOVED') || a.includes('FAILED')) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{action}</span>
-    return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{action}</span>
+    const base = "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium max-w-xs truncate inline-block"
+    if (a === 'KEEP') return <span className={`${base} bg-sky-100 text-sky-800`}>Keep</span>
+    if (a.includes('RENAME') || a.includes('RENAMED') || a.includes('UPDATED') || a.includes('REPAIRED')) return <span className={`${base} bg-amber-100 text-amber-800`}>{action}</span>
+    if (a.includes('REMOVE') || a.includes('REMOVED') || a.includes('FAILED')) return <span className={`${base} bg-red-100 text-red-800`}>{action}</span>
+    return <span className={`${base} bg-slate-100 text-slate-700`}>{action}</span>
   }
 
   const runImaging = () => {
@@ -123,7 +124,7 @@ export default function NounImaging() {
   }
 
   return (
-    <Card className="max-w-3xl w-full p-6">
+    <Card className="max-w-6xl w-full p-6">
       <h3 className="text-xl font-bold text-[#1d3557]">Noun Imaging Tool</h3>
       <p className="text-sm text-slate-500 mb-6">Batch-audit and repair noun image links.</p>
 
@@ -199,8 +200,8 @@ export default function NounImaging() {
             </div>
 
             {/* Results table */}
-            <div className="overflow-auto shadow-sm rounded-lg border border-slate-100">
-              <table className="min-w-full divide-y divide-slate-100">
+            <div className="overflow-x-auto shadow-sm rounded-lg border border-slate-100 w-full">
+              <table className="min-w-full w-full divide-y divide-slate-100 table-auto">
                 <thead className="bg-[#f8fafc]">
                   <tr>
                     <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600">Original Filename</th>
@@ -212,8 +213,8 @@ export default function NounImaging() {
                 <tbody className="bg-white divide-y divide-slate-100">
                   {paginatedFiles.map((f, idx) => (
                     <tr key={(f.original || '') + idx}>
-                      <td className="px-4 py-2 text-xs text-[#1d3557] wrap-break-word">{f.original}</td>
-                      <td className="px-4 py-2 text-xs text-slate-600">{f.descriptor}</td>
+                      <td className="px-4 py-2 text-xs text-[#1d3557] wrap-break-word whitespace-normal">{f.original}</td>
+                      <td className="px-4 py-2 text-xs text-slate-600 whitespace-normal wrap-break-word">{f.descriptor}</td>
                       <td className="px-4 py-2">{renderStatusChip(f.status)}</td>
                       <td className="px-4 py-2">{renderActionChip(f.action)}</td>
                     </tr>
@@ -232,9 +233,13 @@ export default function NounImaging() {
             <div className="flex items-center justify-between">
               <div className="text-xs text-slate-500">Page {page} of {totalPages}</div>
               <div className="flex items-center gap-2">
-                <Button size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Prev</Button>
+                <Button size="sm" onClick={() => setPage(1)} disabled={page === 1} aria-label="Go to first page">First</Button>
+                <Button size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} aria-label="Previous page">Prev</Button>
+
                 <div className="text-xs px-2">{page}</div>
-                <Button size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</Button>
+
+                <Button size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} aria-label="Next page">Next</Button>
+                <Button size="sm" onClick={() => setPage(totalPages)} disabled={page === totalPages} aria-label="Go to last page">Last</Button>
               </div>
             </div>
           </div>
