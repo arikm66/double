@@ -16,10 +16,10 @@ export default function WordPacks() {
   const [deletingId, setDeletingId] = useState(null)
 
   // sub-navigation state (HeroUI Tabs)
-  const [activeTab, setActiveTab] = useState('library')
+  const [activeTab, setActiveTab] = useState('nouns')
 
-  // sample Card Packs (replace with server-driven data later)
-  const [packs, setPacks] = useState([
+  // sample Card Packs Management (replace with server-driven data later)
+  const [cardPacks, setCardPacks] = useState([
     { id: 'pack-1', title: 'Early Sounds Pack', color: 'primary-mint', cards: 24 },
     { id: 'pack-2', title: 'Animals Pack', color: 'deep-ocean', cards: 36 },
     { id: 'pack-3', title: 'Everyday Objects', color: 'amber-400', cards: 18 }
@@ -85,15 +85,15 @@ export default function WordPacks() {
       <div className="w-full">
         <div className="flex justify-center mb-6 no-panel">
           <Tabs selectedKey={activeTab} onSelectionChange={(k) => setActiveTab(k)} variant="underlined" className="w-max" disableCursorAnimation>
-            <Tab key="library">Library Management</Tab>
-            <Tab key="packs">Card Packs</Tab>
+            <Tab key="nouns">Nouns Management</Tab>
+            <Tab key="cardPacks">Card Packs Management</Tab>
           </Tabs>
         </div>
       </div>
 
       <div className="w-full flex flex-col lg:flex-row gap-8 lg:h-[calc(100vh-6rem)]">
-        {/* Sidebar (only visible in Library Management tab) */}
-        {activeTab === 'library' && (
+        {/* Sidebar (only visible in Nouns Management tab) */}
+        {activeTab === 'nouns' && (
           <aside className="w-full lg:w-72 rounded-2xl overflow-hidden shadow-sm bg-[#1d3557] text-white p-4 flex flex-col lg:h-[calc(100vh-6rem)]">
             <div className="mb-4">
               <input
@@ -125,7 +125,7 @@ export default function WordPacks() {
 
         {/* Main content */}
         <main className="w-full flex-1 p-6 flex flex-col">
-          {activeTab === 'library' ? (
+          {activeTab === 'nouns' ? (
             <>
               <div className="flex items-center justify-between mb-6">
                 <div>
@@ -202,25 +202,24 @@ export default function WordPacks() {
               </div>
             </>
           ) : (
-            /* Card Packs view (full-width) */
             <div className="w-full">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-[#1d3557]">Card Packs</h3>
+                <h3 className="text-xl font-bold text-[#1d3557]">Card Packs Management</h3>
                 <Button radius="full" color="primary" onClick={() => {
                   const id = `pack-${Date.now()}`
-                  setPacks(prev => [{ id, title: `New Pack ${prev.length + 1}`, color: 'primary-mint', cards: 0 }, ...prev])
+                  setCardPacks(prev => [{ id, title: `New Pack ${prev.length + 1}`, color: 'primary-mint', cards: 0 }, ...prev])
                 }}>Create New Pack</Button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {packs.map((pack, i) => (
+                {cardPacks.map((pack, i) => (
                   <Card key={pack.id} className="overflow-hidden">
                     <div className={`h-24 ${pack.color === 'primary-mint' ? 'bg-primary-mint' : pack.color === 'deep-ocean' ? 'bg-deep-ocean' : 'bg-amber-400'} flex items-end p-4 text-white font-semibold`}>{pack.title}</div>
                     <div className="p-4 flex flex-col gap-3">
                       <div className="text-sm text-slate-600">{pack.cards} cards</div>
                       <div className="flex items-center gap-3 mt-auto">
                         <button className="text-sm text-slate-600 hover:underline" onClick={() => {/* edit placeholder */}}>Edit</button>
-                        <button className="text-sm text-red-600 hover:underline" onClick={() => setPacks(prev => prev.filter(p => p.id !== pack.id))}>Delete</button>
+                        <button className="text-sm text-red-600 hover:underline" onClick={() => setCardPacks(prev => prev.filter(p => p.id !== pack.id))}>Delete</button>
                         <div className="ml-auto">
                           <Button color="primary" radius="full">Play</Button>
                         </div>
