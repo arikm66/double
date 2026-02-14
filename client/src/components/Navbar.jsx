@@ -12,7 +12,7 @@ import {
 } from '@heroui/react'
 import DoubleLogo from './DoubleLogo'
 import { useAuth } from '../contexts/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 export default function AppNavbar() {
   const [active, setActive] = useState('Home')
@@ -35,6 +35,18 @@ export default function AppNavbar() {
   React.useEffect(() => {
     if (!links.includes(active)) setActive(links[0] || '')
   }, [auth.user])
+
+  // keep nav "active" in sync with the current URL (handles pasted URLs / refresh)
+  const location = useLocation()
+  React.useEffect(() => {
+    const p = location.pathname
+
+    if (p.startsWith('/lib-mgmt')) setActive('Library Management')
+    else if (p === '/admin-panel') setActive('Admin Panel')
+    else if (p === '/' || p === '/dashboard') setActive('Dashboard')
+    // fall back to the first available link if current label isn't present
+    else if (!links.includes(active)) setActive(links[0] || '')
+  }, [location.pathname, links])
 
   const routeForLabel = (label) => {
     if (label === 'Library Management') return '/lib-mgmt'
