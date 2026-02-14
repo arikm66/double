@@ -146,7 +146,7 @@ export default function LibraryManagement() {
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {nouns.map(noun => (
-                      <Card key={noun._id} className="overflow-hidden">
+                      <Card key={noun._id} className="overflow-hidden border border-slate-200 rounded-2xl">
                         <div className="w-full h-44 bg-white/80 overflow-hidden">
                           {/* top action bar — reserved space so icons don't overlap artwork */}
                           <div className="h-10 flex items-center justify-end px-3 pt-1">
@@ -184,11 +184,13 @@ export default function LibraryManagement() {
                           </div>
 
                           <div className="flex-1 flex items-center justify-center pb-3">
-                            {noun.imageUrl ? (
-                              <img loading="lazy" src={noun.imageUrl} alt={noun.nameEn} className="max-w-full max-h-36 object-contain block" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-4xl">📦</div>
-                            )}
+                            <div className="w-[90%] max-w-[9rem] border border-slate-200 rounded-md p-2 bg-white/80 flex items-center justify-center">
+                              {noun.imageUrl ? (
+                                <img loading="lazy" src={noun.imageUrl} alt={noun.nameEn} className="max-w-full max-h-28 object-contain block" />
+                              ) : (
+                                <div className="text-4xl">📦</div>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="p-3">

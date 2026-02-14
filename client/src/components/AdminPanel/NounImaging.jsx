@@ -1,56 +1,100 @@
-import React, { useState } from 'react'
-import { Card, Button } from '@heroui/react'
-import { request } from '../../services/api'
+import React, { useState, useEffect } from 'react'
+import { Card, Button, Progress } from '@heroui/react'
 
 export default function NounImaging() {
   const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState('')
+  const [progress, setProgress] = useState(0)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
 
-  const runImaging = async () => {
+  const runImaging = () => {
+    // 1. Reset state
     setError(null)
     setResult(null)
+    setProgress(0)
     setLoading(true)
-    try {
-      const res = await request({ path: '/api/utils/nounimaging', method: 'GET' })
-      if (res.ok) setResult(res.body)
-      else setError(res.body?.message || `Server returned ${res.status}`)
-    } catch (err) {
-      setError(err.message || 'Request failed')
-    } finally {
-      setLoading(false)
-    }
+    setStatus('Connecting to server...')
+
+    // 2. Initialize EventSource pointing to your SSE route
+    // Note: EventSource only supports GET requests
+    const eventSource = new EventSource('/api/utils/nounimaging');
+
+    // 3. Listen for specific events defined in your controller
+    
+    // Capture 'progress' events
+    eventSource.addEventListener('progress', (event) => {
+      const data = JSON.parse(event.data);
+      setProgress(data.progress * 100); // Progress is 0-1, HeroUI needs 0-100
+      setStatus(data.status || data.message);
+    });
+
+    // Capture 'complete' events
+    eventSource.addEventListener('complete', (event) => {
+      const data = JSON.parse(event.data);
+      setResult(data.data);
+      setStatus('Completed');
+      setLoading(false);
+      eventSource.close(); // Important: Close the connection when done
+    });
+
+    // Capture 'error' events
+    eventSource.addEventListener('error', (event) => {
+      // EventSource error objects don't always contain the message directly
+      // If the server sent a JSON error event:
+      if (event.data) {
+        const data = JSON.parse(event.data);
+        setError(data.message || 'An error occurred during processing');
+      } else {
+        setError('Connection to server failed.');
+      }
+      setLoading(false);
+      eventSource.close();
+    });
   }
 
   return (
-    <Card className="max-w-3xl w-full">
-      <div className="p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h3 className="text-xl font-bold" style={{ color: '#1d3557' }}>Noun Imaging Tool</h3>
-            <div className="text-sm text-slate-500 mt-2">Batch-audit images in Cloud Storage and compare to DB nouns.</div>
+    <Card className="max-w-3xl w-full p-6">
+      <h3 className="text-xl font-bold text-[#1d3557]">Noun Imaging Tool</h3>
+      <p className="text-sm text-slate-500 mb-6">Batch-audit and repair noun image links.</p>
+
+      <div className="space-y-4">
+        {!loading && !result && (
+          <Button 
+            color="primary" 
+            onClick={runImaging}
+            className="bg-[#457b9d]"
+          >
+            Run Noun Imaging
+          </Button>
+        )}
+
+        {loading && (
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs">
+              <span>{status}</span>
+              <span>{Math.round(progress)}%</span>
+            </div>
+            <Progress 
+              value={progress} 
+              color="primary" 
+              className="max-w-md"
+              isStriped
+            />
           </div>
-        </div>
+        )}
 
-        <div className="mt-6 bg-white/50 border-2 border-dashed border-slate-300 rounded-lg p-4 min-h-32 text-sm text-slate-500">
-          {error && <div className="text-sm text-red-600 mb-3">{error}</div>}
+        {error && <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
 
-          {!result && !error && (
-            <div className="text-center py-12 text-sm text-slate-500">
-              Click the <Button color="ghost" radius="full" onClick={runImaging} disabled={loading} aria-label="Run Noun Imaging" className="font-semibold text-deep-ocean">
-                Run Noun Imaging
-              </Button> control to scan Cloud Storage and compare images with DB nouns — results (matched images & cleaned URLs) will appear below.
-            </div>
-          )}
-
-          {result && (
-            <div className="space-y-4">
-              <div className="text-sm text-slate-700 font-medium">Matched images: {Array.isArray(result.files) ? result.files.length : '—'}</div>
-              <div className="text-xs text-slate-600">Cleaned URLs: {Array.isArray(result.cleanedUrls) ? result.cleanedUrls.length : '—'}</div>
-              <pre className="overflow-auto max-h-64 bg-white p-2 rounded text-xs">{JSON.stringify(result, null, 2)}</pre>
-            </div>
-          )}
-        </div>
+        {result && (
+          <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+            <h4 className="text-sm font-bold text-green-800">Imaging Results</h4>
+            <ul className="text-xs mt-2 space-y-1">
+              <li>Matched Images: {result.files?.length}</li>
+              <li>Cleaned URLs: {result.cleanedUrls?.length}</li>
+            </ul>
+          </div>
+        )}
       </div>
     </Card>
   )

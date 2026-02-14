@@ -3,8 +3,8 @@ const User = require('../models/User');
 
 const authMiddleware = (req, res, next) => {
   try {
-    // Get token from header
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    // Get token from header or query
+    const token = req.header('Authorization')?.replace('Bearer ', '') || req.query.token;
 
     if (!token) {
       return res.status(401).json({ 

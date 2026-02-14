@@ -234,25 +234,155 @@ exports.serveFile = (req, res) => {
 };
 
 exports.nounImaging = async (req, res) => {
+    let status = '';
+    let progress = 0;
+
     try {
         const bucket = getBucket();
-        // List files in the 'nouns' folder
+
+        // Setup SSE headers (same as imageRetrieval)
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
+
+        const sendSSE = (event, data) => {
+            res.write(`event: ${event}\n`);
+            res.write(`data: ${JSON.stringify(data)}\n\n`);
+        };
+
+        sendSSE('progress', {
+            progress: 0,
+            status: 'Starting noun imaging...',
+            message: 'Initializing...'
+        });
+
+        /*
+         * STEP 1 — List files from Firebase (10%)
+         */
         const [files] = await bucket.getFiles({ prefix: 'nouns/' });
+
         const fileList = files
-            .filter(file => file.name !== 'nouns/' && !file.name.endsWith('/') && Number(file.metadata.size) > 0)
+            .filter(file =>
+                file.name !== 'nouns/' &&
+                !file.name.endsWith('/') &&
+                Number(file.metadata.size) > 0
+            )
             .map(file => ({
                 name: file.name,
                 size: file.metadata.size,
                 contentType: file.metadata.contentType
             }));
-        // Process file names
+
+        progress = 0.1;
+        sendSSE('progress', {
+            progress,
+            status: `Found ${fileList.length} storage files`,
+            message: 'Files retrieved from storage'
+        });
+
+        /*
+         * STEP 2 — Process filenames (10%)
+         */
         const processedNames = processFileNames(fileList.map(f => f.name));
-        // Get all nouns from the database
+
+        progress = 0.2;
+        sendSSE('progress', {
+            progress,
+            status: 'Processed file names',
+            message: 'Filename validation completed'
+        });
+
+        /*
+         * STEP 3 — Retrieve nouns (10%)
+         */
         const allNouns = await Noun.find();
-        const matchedImages = await matchImages(processedNames, allNouns, bucket);
-        const cleanedUrls = await cleanUrls(processedNames, allNouns, bucket);
-        res.status(200).json({ files: matchedImages , cleanedUrls});
+
+        progress = 0.3;
+        sendSSE('progress', {
+            progress,
+            status: `Retrieved ${allNouns.length} nouns`,
+            message: 'Database nouns loaded'
+        });
+
+        /*
+         * STEP 4 — Match images (30%)
+         */
+        const matchedImages = [];
+        const totalFiles = processedNames.length;
+        let processedFiles = 0;
+
+        for (const file of processedNames) {
+            const result = await matchImages([file], allNouns, bucket);
+            matchedImages.push(result[0]);
+
+            processedFiles++;
+
+            const executionProgress = totalFiles > 0
+                ? processedFiles / totalFiles
+                : 1;
+
+            progress = 0.3 + (executionProgress * 0.3);
+
+            sendSSE('progress', {
+                progress,
+                current: processedFiles,
+                total: totalFiles,
+                status: `Matching images (${processedFiles}/${totalFiles})`,
+                message: 'Processing image matching...'
+            });
+        }
+
+        /*
+         * STEP 5 — Clean URLs (30% → 100%)
+         */
+        const cleanedResults = [];
+        const totalNouns = allNouns.length;
+        let processedNouns = 0;
+
+        for (const noun of allNouns) {
+            const result = await cleanUrls(processedNames, [noun], bucket);
+            cleanedResults.push(...result);
+
+            processedNouns++;
+
+            const executionProgress = totalNouns > 0
+                ? processedNouns / totalNouns
+                : 1;
+
+            progress = 0.6 + (executionProgress * 0.4);
+
+            sendSSE('progress', {
+                progress,
+                current: processedNouns,
+                total: totalNouns,
+                status: `Cleaning URLs (${processedNouns}/${totalNouns})`,
+                message: 'Validating noun image URLs...'
+            });
+        }
+
+        /*
+         * COMPLETE
+         */
+        sendSSE('complete', {
+            progress: 1,
+            status: 'Noun imaging completed successfully',
+            message: 'All imaging operations finished',
+            data: {
+                files: matchedImages,
+                cleanedUrls: cleanedResults
+            }
+        });
+
+        res.end();
+
     } catch (err) {
-        res.status(500).json({ error: 'Noun imaging util failed.', details: err.message });
+        res.write(`event: error\n`);
+        res.write(`data: ${JSON.stringify({
+            progress: 0,
+            status: 'Error during noun imaging',
+            message: err.message
+        })}\n\n`);
+        res.end();
     }
 };
