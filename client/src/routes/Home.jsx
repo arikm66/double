@@ -55,11 +55,11 @@ export default function Home() {
         </section>
 
         {/* Symbol Library */}
-        <section className="mt-12 bg-white rounded-2xl p-6">
-          <h3 className="text-xl font-semibold text-[#1d3557]">Simple Categories. Concrete Nouns.</h3>
-          <p className="text-sm text-slate-600 mt-2">A compact library of common nouns across 70 categories.</p>
+        <section className="mt-12 bg-white rounded-2xl p-6 text-center">
+          <h3 className="text-3xl md:text-4xl font-extrabold text-[#1d3557]">Simple Categories. Concrete Nouns.</h3>
+          <p className="text-base md:text-lg text-slate-600 mt-2 mx-auto max-w-2xl">A compact library of common nouns across 70 categories.</p>
 
-          <div className="mt-4 flex flex-wrap gap-4">
+          <div className="mt-6 flex flex-wrap gap-4 justify-center">
             {categories.map((c, i) => (
               <div key={i} className="w-20 h-20 bg-[#f8faf9] rounded-xl flex items-center justify-center text-3xl border border-primary-mint">
                 {c}
