@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import * as Hero from '@heroui/react'
 import App from './App'
 import './styles.css'
+import { AuthProvider } from './contexts/AuthContext'
 
 // Use HeroUI provider when available; fall back to a no-op wrapper.
 const Provider = Hero.HeroUIProvider || Hero.HeroProvider || Hero.NextUIProvider || React.Fragment
@@ -31,7 +32,9 @@ if (typeof Hero.createTheme === 'function') {
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider {...(heroTheme ? { theme: heroTheme } : {})}>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </Provider>
   </React.StrictMode>
 )

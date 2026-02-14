@@ -1,11 +1,13 @@
 import React from 'react'
 import AppNavbar from './components/Navbar'
 import Home from './routes/Home'
+import LoginModal from './components/LoginModal'
 
 export default function App() {
   return (
     <>
       <AppNavbar />
+      <LoginModal />
       <div className="app">
         <header>
           <h1>Double — <small style={{fontWeight:500}}>Spot It!</small></h1>

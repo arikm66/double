@@ -3,9 +3,18 @@ export async function request({ path = '/', method = 'GET', body = null }) {
   const url = isFullUrl ? path : path.startsWith('/') ? path : `/${path}`
 
   const options = { method, headers: {} }
+  // attach JSON body when appropriate
   if (body && ['POST','PUT','PATCH'].includes(method.toUpperCase())) {
     options.headers['Content-Type'] = 'application/json'
     options.body = JSON.stringify(body)
+  }
+
+  // attach Authorization header from localStorage token if present
+  try {
+    const token = localStorage.getItem('double_token')
+    if (token) options.headers['Authorization'] = `Bearer ${token}`
+  } catch (e) {
+    /* ignore (no localStorage) */
   }
 
   const res = await fetch(url, options)
