@@ -8,6 +8,53 @@ export default function NounImaging() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
 
+  // --- Results / table state ---
+  const [filesData, setFilesData] = useState([])
+  const [cleanedUrls, setCleanedUrls] = useState([])
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const rowsPerPage = 15
+  const [totalNouns, setTotalNouns] = useState(null)
+
+  const filteredFiles = React.useMemo(() => {
+    const q = (search || '').trim().toLowerCase()
+    if (!q) return filesData
+    return filesData.filter(f =>
+      (f.original || '').toLowerCase().includes(q) ||
+      (f.descriptor || '').toLowerCase().includes(q)
+    )
+  }, [filesData, search])
+
+  const totalPages = Math.max(1, Math.ceil(filteredFiles.length / rowsPerPage))
+  const currentPage = Math.min(page, totalPages)
+
+  const paginatedFiles = React.useMemo(() => {
+    const start = (currentPage - 1) * rowsPerPage
+    return filteredFiles.slice(start, start + rowsPerPage)
+  }, [filteredFiles, currentPage])
+
+  const repairsCount = React.useMemo(() => filesData.filter(f => f.status !== 'VALID' || (f.action && f.action !== 'KEEP')).length, [filesData])
+
+  useEffect(() => { setPage(1) }, [search, filesData])
+
+  // Helper chips (small, themed)
+  const renderStatusChip = (status) => {
+    if (!status) return null
+    const s = String(status).toUpperCase()
+    if (s === 'VALID') return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Valid</span>
+    if (s === 'REPAIRED') return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Repaired</span>
+    return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{status}</span>
+  }
+
+  const renderActionChip = (action) => {
+    if (!action) return null
+    const a = String(action).toUpperCase()
+    if (a === 'KEEP') return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800">Keep</span>
+    if (a.includes('RENAME') || a.includes('RENAMED') || a.includes('UPDATED') || a.includes('REPAIRED')) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">{action}</span>
+    if (a.includes('REMOVE') || a.includes('REMOVED') || a.includes('FAILED')) return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{action}</span>
+    return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{action}</span>
+  }
+
   const runImaging = () => {
     // 1. Reset state
     setError(null)
@@ -31,15 +78,30 @@ export default function NounImaging() {
     
     // Capture 'progress' events
     eventSource.addEventListener('progress', (event) => {
-      const data = JSON.parse(event.data);
-      setProgress(data.progress * 100); // Progress is 0-1, HeroUI needs 0-100
-      setStatus(data.status || data.message);
+      try {
+        const data = JSON.parse(event.data || '{}');
+        if (typeof data.progress === 'number') setProgress(data.progress * 100);
+        setStatus(data.status || data.message || '');
+        // capture total nouns when emitted by server during cleaning step
+        if (data.total && /clean/i.test(data.status || data.message || '')) {
+          setTotalNouns(data.total);
+        }
+      } catch (e) {
+        console.warn('Malformed SSE progress', e);
+      }
     });
 
     // Capture 'complete' events
     eventSource.addEventListener('complete', (event) => {
-      const data = JSON.parse(event.data);
-      setResult(data.data);
+      try {
+        const data = JSON.parse(event.data || '{}');
+        const payload = data.data || {};
+        setFilesData(payload.files || []);
+        setCleanedUrls(payload.cleanedUrls || []);
+        setResult(payload);
+      } catch (e) {
+        console.warn('Malformed SSE complete', e);
+      }
       setStatus('Completed');
       setLoading(false);
       eventSource.close(); // Important: Close the connection when done
@@ -98,12 +160,83 @@ export default function NounImaging() {
         {error && <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
 
         {result && (
-          <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-            <h4 className="text-sm font-bold text-green-800">Imaging Results</h4>
-            <ul className="text-xs mt-2 space-y-1">
-              <li>Matched Images: {result.files?.length}</li>
-              <li>Cleaned URLs: {result.cleanedUrls?.length}</li>
-            </ul>
+          <div className="mt-4 space-y-4">
+            {/* Summary cards */}
+            <div className="grid grid-cols-3 gap-4">
+              <Card className="p-3 text-center">
+                <div className="text-xs text-slate-500">Total Files Scanned</div>
+                <div className="text-xl font-bold text-[#1d3557]">{filesData.length}</div>
+              </Card>
+
+              <Card className="p-3 text-center">
+                <div className="text-xs text-slate-500">Total Nouns Audited</div>
+                <div className="text-xl font-bold text-[#1d3557]">{totalNouns ?? cleanedUrls.length ?? '—'}</div>
+              </Card>
+
+              <Card className="p-3 text-center">
+                <div className="text-xs text-slate-500">Total Repairs Needed</div>
+                <div className="text-xl font-bold text-[#1d3557]">{repairsCount}</div>
+              </Card>
+            </div>
+
+            {/* Search + meta */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <input
+                  type="search"
+                  value={search}
+                  onChange={e => { setSearch(e.target.value) }}
+                  placeholder="Search filename or descriptor"
+                  className="px-3 py-2 border rounded-md text-sm w-80"
+                  aria-label="Search matched files"
+                />
+                <Button color="primary" onClick={() => { setSearch(''); setPage(1); }} className="bg-[#457b9d]">Clear</Button>
+              </div>
+
+              <div className="text-xs text-slate-500">
+                Showing {filteredFiles.length ? ((page - 1) * rowsPerPage + 1) : 0}–{Math.min(page * rowsPerPage, filteredFiles.length)} of {filteredFiles.length}
+              </div>
+            </div>
+
+            {/* Results table */}
+            <div className="overflow-auto shadow-sm rounded-lg border border-slate-100">
+              <table className="min-w-full divide-y divide-slate-100">
+                <thead className="bg-[#f8fafc]">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600">Original Filename</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600">Descriptor</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600">Status</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-slate-100">
+                  {paginatedFiles.map((f, idx) => (
+                    <tr key={(f.original || '') + idx}>
+                      <td className="px-4 py-2 text-xs text-[#1d3557] wrap-break-word">{f.original}</td>
+                      <td className="px-4 py-2 text-xs text-slate-600">{f.descriptor}</td>
+                      <td className="px-4 py-2">{renderStatusChip(f.status)}</td>
+                      <td className="px-4 py-2">{renderActionChip(f.action)}</td>
+                    </tr>
+                  ))}
+
+                  {paginatedFiles.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-6 text-center text-sm text-slate-500">No files match your search</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination controls */}
+            <div className="flex items-center justify-between">
+              <div className="text-xs text-slate-500">Page {page} of {totalPages}</div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Prev</Button>
+                <div className="text-xs px-2">{page}</div>
+                <Button size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</Button>
+              </div>
+            </div>
           </div>
         )}
       </div>
