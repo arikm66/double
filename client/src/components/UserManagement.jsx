@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import ConfirmDialog from './ConfirmDialog';
 import './UserManagement.css';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ReplayIcon from '@mui/icons-material/Replay';
+import CloseIcon from '@mui/icons-material/Close';
 
 function UserManagement() {
   const navigate = useNavigate();
@@ -176,7 +180,7 @@ function UserManagement() {
           <h1>User Management</h1>
           <div className="header-buttons">
             <button className="restore-button" onClick={handleRestoreDefaults} title="Restore delete confirmation prompts">
-              🔄 Restore Confirmations
+              <ReplayIcon style={{ verticalAlign: 'middle', marginRight: 8 }} /> Restore Confirmations
             </button>
             <button className="primary-button" onClick={openCreateModal}>
               + Add User
@@ -189,7 +193,7 @@ function UserManagement() {
         {error && (
           <div className="error-banner">
             <span>{error}</span>
-            <button className="error-close" onClick={() => setError('')}>✕</button>
+            <button className="error-close" onClick={() => setError('')}><CloseIcon /></button>
           </div>
         )}
         {successMessage && <div className="success-banner">{successMessage}</div>}
@@ -219,14 +223,14 @@ function UserManagement() {
                         style={{ marginRight: 8 }}
                         onClick={() => openEditModal(user)}
                       >
-                        <span role="img" aria-label="edit">✏️</span>
+                        <EditIcon />
                       </button>
                       <button
                         className="icon-btn delete-btn"
                         title="Delete User"
                         onClick={() => handleDelete(user._id)}
                       >
-                        <span role="img" aria-label="delete">🗑️</span>
+                        <DeleteIcon />
                       </button>
                     </td>
                   </tr>

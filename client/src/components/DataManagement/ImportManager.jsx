@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import ImportProgressModal from './ImportProgressModal';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import CloseIcon from '@mui/icons-material/Close';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function ImportManager({ isAdmin, onError, onImportComplete }) {
   const [importFile, setImportFile] = useState(null);
@@ -253,13 +257,13 @@ function ImportManager({ isAdmin, onError, onImportComplete }) {
               />
               {importFile && (
                 <div className="file-info">
-                  <span>📄 {importFile.name}</span>
+                  <span><InsertDriveFileIcon style={{ marginRight: 8 }} />{importFile.name}</span>
                   <button 
                     onClick={clearImport}
                     className="clear-file-btn"
                     disabled={importLoading}
                   >
-                    ✕
+                    <CloseIcon />
                   </button>
                 </div>
               )}
@@ -270,7 +274,7 @@ function ImportManager({ isAdmin, onError, onImportComplete }) {
               className="import-btn"
               disabled={!importFile || importLoading}
             >
-              {importLoading ? '⏳ Importing...' : '📥 Import Nouns'}
+              {importLoading ? (<><CircularProgress size={14} style={{ marginRight: 8 }} />Importing...</>) : (<><CloudUploadIcon style={{ marginRight: 8 }} />Import Nouns</>)}
             </button>
           </div>
 

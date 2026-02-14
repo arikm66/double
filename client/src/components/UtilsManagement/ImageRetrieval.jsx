@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import CloseIcon from '@mui/icons-material/Close';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function ImageRetrieval() {
     const [data, setData] = useState(null);
@@ -114,13 +117,13 @@ function ImageRetrieval() {
                     />
                     {folderFiles.length > 0 && (
                         <div className="file-info">
-                            <span>📁 {folderName}</span>
+                            <span><FolderOpenIcon style={{ marginRight: 8 }} /> {folderName}</span>
                             <button
                                 onClick={clearFolder}
                                 className="clear-file-btn"
                                 disabled={loading}
                             >
-                                ✕
+                                <CloseIcon />
                             </button>
                         </div>
                     )}
@@ -130,7 +133,7 @@ function ImageRetrieval() {
                     className="import-btn"
                     disabled={folderFiles.length === 0 || loading}
                 >
-                    {loading ? '⏳ Retrieving...' : '📂 Retrieve'}
+                    {loading ? (<><CircularProgress size={14} style={{ marginRight: 8 }} />Retrieving...</>) : (<><FolderOpenIcon style={{ marginRight: 8 }} />Retrieve</>)}
                 </button>
             </div>
             {loading && <div>Loading...</div>}

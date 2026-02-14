@@ -7,6 +7,7 @@ import CategoryManager from './CategoryManager';
 import NounManager from './NounManager';
 import ImportManager from './ImportManager';
 import './DataManagement.css';
+import CloseIcon from '@mui/icons-material/Close';
 
 function DataManagement() {
   const { user } = useAuth();
@@ -125,7 +126,7 @@ function DataManagement() {
         {error && (
           <div className="error-banner">
             <span>{error}</span>
-            <button className="error-close" onClick={() => setError('')}>✕</button>
+            <button className="error-close" onClick={() => setError('')}><CloseIcon /></button>
           </div>
         )}
 

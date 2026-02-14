@@ -2,8 +2,13 @@ import { useEffect, useState } from 'react';
 import Navbar from '../Navbar';
 import { useAuth } from '../../context/AuthContext';
 import ConfirmDialog from '../ConfirmDialog';
-import './PacksManagement.css';
 import { useNavigate } from 'react-router-dom';
+
+// MUI
+import { Grid, Card, CardContent, Button, Typography, IconButton, Box, Container, Alert } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
 
 // API functions implemented locally
 const fetchAllPacks = async () => {
@@ -93,70 +98,83 @@ function PacksList() {
   }, []);
 
   return (
-    <div className="user-management-container">
+    <Container maxWidth="lg" sx={{ pt: 9, pb: 6 }}>
       <Navbar />
-      <div className="user-sticky">
-        <div className="user-management-header packs-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h1 style={{ margin: 0 }}>Packs Management</h1>
-          <div className="header-buttons">
-            <button className="primary-button" onClick={() => navigate('/packs/create')}>
-              + Create Pack
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="user-management-content">
+      <Box component="header" sx={{ mt: 2, mb: 4, textAlign: 'center' }}>
+        <Typography variant="h3" sx={{ m: 0 }}>Packs Management</Typography>
+        <Box sx={{ mt: 2 }}>
+          <Button variant="contained" color="primary" onClick={() => navigate('/packs/create')}>
+            + Create Pack
+          </Button>
+        </Box>
+      </Box>
+
+      <Box component="section">
         {error && (
-          <div className="error-banner">
-            <span>{error}</span>
-            <button className="error-close" onClick={() => setError('')}>✕</button>
-          </div>
+          <Alert severity="error" sx={{ mb: 2 }} action={<IconButton size="small" color="inherit" onClick={() => setError('')}><CloseIcon fontSize="small" /></IconButton>}>
+            {error}
+          </Alert>
         )}
+
         {loading ? (
-          <div className="loading-row">Loading packs...</div>
+          <Box sx={{ textAlign: 'center', py: 4 }}>Loading packs...</Box>
         ) : (
-          <div className="packs-grid">
+          <Grid container spacing={3} sx={{ mt: 4, alignItems: 'flex-start' }}>
             {packs.length === 0 ? (
               <div>No packs found.</div>
             ) : (
               packs.map(pack => {
                 const canDelete = user && (user.role === 'admin' || String(user._id) === String(pack.creator?._id));
                 return (
-                  <div className="packs-card" key={pack._id}>
-                    <div className="manage-card-header">
-                      <h3 style={{ margin: 0 }}>{pack.name}</h3>
-                      <span>
-                        <button
-                          className="icon-btn"
-                          title="Edit Pack"
-                          style={{ marginRight: 8 }}
-                          onClick={() => navigate(`/packs/${pack._id}/edit`)}
-                        >
-                          <span role="img" aria-label="edit">✏️</span>
-                        </button>
-                        {canDelete && (
-                          <button
-                            className="icon-btn delete-btn"
-                            title="Delete Pack"
-                            onClick={() => handleDeletePack(pack._id, pack.name)}
-                            disabled={deletingId === pack._id}
-                          >
-                            <span role="img" aria-label="delete">🗑️</span>
-                          </button>
-                        )}
-                      </span>
-                    </div>
-                    <div className="manage-card-body">
-                      <p><b>Creator:</b> {pack.creator?.username || 'N/A'}</p>
-                      <p><b>Cards:</b> {pack.cards?.length ?? 0}</p>
-                    </div>
-                  </div>
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={pack._id}>
+                    <Card
+                      sx={{
+                        width: 200,
+                        height: 200,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        p: 1.5,
+                        boxShadow: '0 6px 18px rgba(0,0,0,0.12)'
+                      }}
+                    >
+                      <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', p: 1 }}>
+                        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="subtitle1" component="div" sx={{ fontSize: 16, fontWeight: 700, textAlign: 'center', wordBreak: 'break-word', flex: 1 }}>
+                            {pack.name}
+                          </Typography>
+                          <Box sx={{ ml: 1, display: 'flex', gap: 0.5 }}>
+                            <IconButton size="small" onClick={() => navigate(`/packs/${pack._id}/edit`)} title="Edit Pack" sx={{ color: 'text.primary' }}>
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            {canDelete && (
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDeletePack(pack._id, pack.name)}
+                                disabled={deletingId === pack._id}
+                                title="Delete Pack"
+                                sx={{ color: 'error.main' }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            )}
+                          </Box>
+                        </Box>
+                        <Box mt={2} sx={{ textAlign: 'center' }}>
+                          <Typography variant="body2"><b>Creator:</b> {pack.creator?.username || 'N/A'}</Typography>
+                          <Typography variant="body2"><b>Cards:</b> {pack.cards?.length ?? 0}</Typography>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
                 );
               })
             )}
-          </div>
+          </Grid>
         )}
-      </div>
+      </Box>
+
       {showConfirmDialog && (
         <ConfirmDialog
           message={packToDelete ? `Are you sure you want to delete the pack "${packToDelete.name}"? This cannot be undone.` : ''}
@@ -165,7 +183,7 @@ function PacksList() {
           showDontAskAgain={false}
         />
       )}
-    </div>
+    </Container>
   );
 }
 

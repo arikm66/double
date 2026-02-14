@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { uploadImage, deleteImage } from '../../utils/imageUpload';
+import CircularProgress from '@mui/material/CircularProgress';
+import SaveIcon from '@mui/icons-material/Save';
 
 function NounModal({ show, onClose, noun, categories, onSave, loading, onError }) {
   const [nounForm, setNounForm] = useState({ nameEn: '', nameHe: '', category: '', imageUrl: '' });
@@ -124,7 +126,7 @@ function NounModal({ show, onClose, noun, categories, onSave, loading, onError }
             </select>
           </div>
           <div className="form-group">
-            <label>Image {uploadingImage && <span className="uploading-indicator">⏳ Uploading...</span>}</label>
+            <label>Image {uploadingImage && <span className="uploading-indicator"><CircularProgress size={14} /></span>}</label>
             <input
               type="file"
               accept="image/*"
@@ -156,7 +158,7 @@ function NounModal({ show, onClose, noun, categories, onSave, loading, onError }
           </div>
           <div className="modal-actions">
             <button type="submit" className="save-btn" disabled={loading || uploadingImage} style={{cursor: (loading || uploadingImage) ? 'wait' : 'pointer'}}>
-              {uploadingImage ? '⏳ Uploading Image...' : loading ? '💾 Saving...' : 'Save'}
+              {uploadingImage ? (<><CircularProgress size={14} style={{ marginRight: 8 }} />Uploading Image...</>) : loading ? (<><SaveIcon style={{ marginRight: 8 }} />Saving...</>) : 'Save'}
             </button>
             <button 
               type="button" 

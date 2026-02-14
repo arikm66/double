@@ -3,6 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Navbar from '../Navbar';
 
+// MUI
+import { Card, CardContent, TextField, Button, Typography, Box, Container, Alert } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
 function PackEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -59,53 +63,58 @@ function PackEdit() {
   };
 
   return (
-    <div className="user-management-container">
+    <Container maxWidth="md" sx={{ pt: 9, pb: 6 }}>
       <Navbar />
-      <div className="user-sticky">
-        <div className="user-management-header packs-header">
-          <button className="back-button" onClick={() => navigate('/packs')}>
-            ← Back to Packs
-          </button>
-          <h1>Edit Pack</h1>
-        </div>
-      </div>
-      <div className="user-management-content">
-        <div className="packs-edit-form">
-          {loading ? (
-            <p>Loading pack...</p>
-          ) : error ? (
-            <p style={{ color: 'red' }}>{error}</p>
-          ) : !pack ? (
-            <p>Pack not found.</p>
-          ) : (
-            <form onSubmit={handleSave}>
-                <div className="form-row">
-                  <label htmlFor="pack-name">Name:</label>
-                  <input
+
+      <Box component="header" sx={{ mt: 2, mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Button startIcon={<ArrowBackIcon />} variant="text" onClick={() => navigate('/packs')}>
+          Back to Packs
+        </Button>
+        <Typography variant="h4" sx={{ flex: 1, textAlign: 'left', ml: 1 }}>Edit Pack</Typography>
+      </Box>
+
+      <Box>
+        {loading ? (
+          <Card sx={{ py: 6, textAlign: 'center' }}>Loading pack...</Card>
+        ) : error ? (
+          <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
+        ) : !pack ? (
+          <Card sx={{ py: 6, textAlign: 'center' }}>Pack not found.</Card>
+        ) : (
+          <Card sx={{ mt: 6, mx: 'auto', width: '90%', maxWidth: 920, p: 2, borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+            <CardContent>
+              <form onSubmit={handleSave}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                  <TextField
                     id="pack-name"
-                    type="text"
+                    label="Name"
                     value={name}
                     onChange={e => setName(e.target.value)}
                     required
+                    variant="outlined"
+                    size="small"
+                    sx={{ flex: '0 1 420px', maxWidth: '100%' }}
                   />
-                  <button type="submit" className="save-btn inline-save" disabled={saving}>
-                    {saving ? 'Saving...' : 'Save'}
-                  </button>
-                </div>
-              <div className="form-row">
-                <label>Creator:</label>
-                <span>{pack.creator?.username || 'N/A'}</span>
-              </div>
-              <div className="form-row">
-                <label>Cards:</label>
-                <span>{pack.cards?.length ?? 0}</span>
-              </div>
+                  <Button type="submit" variant="contained" color="primary" disabled={saving} sx={{ height: 40 }}>
+                    {saving ? 'Saving...' : 'Save & Return'}
+                  </Button>
+                </Box>
 
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                  <Typography variant="subtitle2" sx={{ minWidth: 80 }}>Creator:</Typography>
+                  <Typography variant="body2">{pack.creator?.username || 'N/A'}</Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                  <Typography variant="subtitle2" sx={{ minWidth: 80 }}>Cards:</Typography>
+                  <Typography variant="body2">{pack.cards?.length ?? 0}</Typography>
+                </Box>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+      </Box>
+    </Container>
   );
 }
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import NounModal from './NounModal';
+import CloseIcon from '@mui/icons-material/Close';
 
 function NounManager({ isAdmin, categories, onError, onDeleteRequest, onNounUpdate }) {
   const NOUNS_PAGE_SIZE = 50;
@@ -256,7 +257,7 @@ function NounManager({ isAdmin, categories, onError, onDeleteRequest, onNounUpda
                 }}
                 title="Clear filters"
               >
-                ✕
+                <CloseIcon />
               </button>
             )}
           </div>

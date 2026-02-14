@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import LinkIcon from '@mui/icons-material/Link';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function NounImaging() {
     const [response, setResponse] = useState(null);
@@ -38,7 +40,7 @@ function NounImaging() {
                         onClick={handleMatchImages}
                         disabled={loading}
                     >
-                        {loading ? '⏳ Matching...' : <><span role="img" aria-label="match">🔗</span> Match Images</>}
+                        {loading ? (<><CircularProgress size={16} style={{ marginRight: 8 }} /> Matching...</>) : (<><LinkIcon style={{ verticalAlign: 'middle', marginRight: 8 }} /> Match Images</>)}
                     </button>
                 </div>
                 {error && <div style={{ color: 'red' }}>Error: {error}</div>}

@@ -73,23 +73,68 @@
   justify-content: center;
 }
 
-.packs-card {
-  background: white;
-  border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.10);
-  width: 300px;
-  height: 300px;
-  min-width: 300px;
-  min-height: 300px;
-  margin-bottom: 0;
+/* High-specificity override to prevent theme/CSS-in-JS from reverting shape */
+.packs-card.MuiPaper-root, .packs-card.MuiCard-root, .packs-card {
+  background: white !important;
+  border-radius: 50% !important; /* force circular */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12) !important;
+  width: 200px !important; /* fixed circular size */
+  height: 200px !important;
+  margin: 0 auto 18px auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  transition: box-shadow 0.15s, transform 0.15s !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  padding: 12px !important;
+  min-height: 0 !important; /* prevent children from forcing height */
+}
+
+.packs-grid .MuiGrid-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Ensure CardContent fills the container and centers content for circular cards */
+.packs-card .MuiCardContent-root {
+  height: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center; /* center content for compact cards */
+  padding: 6px 8px;
+  min-height: 0;
+}
+
+/* Make the top row (title + icons) span the full width inside the circle */
+.packs-card .MuiCardContent-root > div:first-child {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  transition: box-shadow 0.2s, transform 0.2s;
-  box-sizing: border-box;
-  overflow: hidden;
-  padding: 0;
+}
+
+/* Slight vertical spacing for the secondary info so it sits lower in the circle */
+.packs-card .MuiCardContent-root > div:nth-child(2) {
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Center grid items so cards stay uniform and centered */
+.packs-grid .MuiGrid-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 480px) {
+  .packs-card { width: 150px; height: 150px; padding: 10px; }
+  .packs-grid { gap: 12px; }
+  .form-row input, .form-row select { flex: 0 1 260px; max-width: 260px; }
 }
 .manage-card-header {
   display: flex;
@@ -97,6 +142,14 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+}
+
+.packs-card .pack-title {
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  word-break: break-word;
+  line-height: 1.2;
 }
 .manage-card-body {
   text-align: center;
