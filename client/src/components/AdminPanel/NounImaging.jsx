@@ -16,9 +16,16 @@ export default function NounImaging() {
     setLoading(true)
     setStatus('Connecting to server...')
 
-    // 2. Initialize EventSource pointing to your SSE route
-    // Note: EventSource only supports GET requests
-    const eventSource = new EventSource('/api/utils/nounimaging');
+    // 1. Token retrieval (authenticate EventSource via query param)
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('No authentication token found. Please log in again.');
+      setLoading(false);
+      return;
+    }
+
+    // 2. Initialize authenticated EventSource (token passed as query param)
+    const eventSource = new EventSource(`/api/utils/nounimaging?token=${encodeURIComponent(token)}`);
 
     // 3. Listen for specific events defined in your controller
     
@@ -59,20 +66,20 @@ export default function NounImaging() {
       <p className="text-sm text-slate-500 mb-6">Batch-audit and repair noun image links.</p>
 
       <div className="space-y-4">
-        {!loading && !result && (
-          <Button 
-            color="primary" 
-            onClick={runImaging}
-            className="bg-[#457b9d]"
-          >
-            Run Noun Imaging
-          </Button>
-        )}
+        <Button 
+          color="primary" 
+          onClick={runImaging}
+          className={`bg-[#457b9d] ${loading ? 'opacity-60 cursor-not-allowed' : 'hover:brightness-105'}`}
+          disabled={loading}
+          aria-disabled={loading}
+        >
+          {loading ? 'Loading...' : 'Run Noun Imaging'}
+        </Button>
 
         {loading && (
           <div className="space-y-2">
             <div className="flex justify-between text-xs">
-              <span>{status}</span>
+              <span aria-live="polite" role="status">{status}</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <Progress 
@@ -80,6 +87,10 @@ export default function NounImaging() {
               color="primary" 
               className="max-w-md"
               isStriped
+              aria-label="Noun imaging progress"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(progress)}
             />
           </div>
         )}

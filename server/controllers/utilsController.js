@@ -236,6 +236,7 @@ exports.serveFile = (req, res) => {
 exports.nounImaging = async (req, res) => {
     let status = '';
     let progress = 0;
+    let heartbeatInterval;
 
     try {
         const bucket = getBucket();
@@ -246,11 +247,24 @@ exports.nounImaging = async (req, res) => {
         res.setHeader('Connection', 'keep-alive');
         res.setHeader('X-Accel-Buffering', 'no');
 
+        // Helper function to send SSE message and force a flush when available
         const sendSSE = (event, data) => {
             res.write(`event: ${event}\n`);
             res.write(`data: ${JSON.stringify(data)}\n\n`);
+            if (res.flush) res.flush();
         };
 
+        // Keep-alive heartbeat to prevent proxies/timeouts (every 15s)
+        heartbeatInterval = setInterval(() => {
+            try {
+                res.write(': keep-alive\n\n');
+                if (res.flush) res.flush();
+            } catch (e) {
+                // ignore write errors — connection may already be closed
+            }
+        }, 15 * 1000);
+
+        // initial progress
         sendSSE('progress', {
             progress: 0,
             status: 'Starting noun imaging...',
@@ -307,58 +321,76 @@ exports.nounImaging = async (req, res) => {
 
         /*
          * STEP 4 — Match images (30%)
+         * - Batch work to avoid calling matchImages for each single file
+         * - Throttle SSE updates: emit every `matchEmitInterval` files or when progress changes by >= 1%
          */
         const matchedImages = [];
         const totalFiles = processedNames.length;
         let processedFiles = 0;
+        const matchBatchSize = 20;           // process files in batches of 20
+        const matchEmitInterval = 20;        // emit progress every 20 files
+        let lastEmittedProgress = 0;
 
-        for (const file of processedNames) {
-            const result = await matchImages([file], allNouns, bucket);
-            matchedImages.push(result[0]);
+        for (let i = 0; i < totalFiles; i += matchBatchSize) {
+            const batch = processedNames.slice(i, i + matchBatchSize);
 
-            processedFiles++;
+            // single call for the batch (matchImages accepts an array)
+            const results = await matchImages(batch, allNouns, bucket);
+            matchedImages.push(...results);
 
-            const executionProgress = totalFiles > 0
-                ? processedFiles / totalFiles
-                : 1;
+            processedFiles += batch.length;
 
+            const executionProgress = totalFiles > 0 ? processedFiles / totalFiles : 1;
             progress = 0.3 + (executionProgress * 0.3);
 
-            sendSSE('progress', {
-                progress,
-                current: processedFiles,
-                total: totalFiles,
-                status: `Matching images (${processedFiles}/${totalFiles})`,
-                message: 'Processing image matching...'
-            });
+            const progressDelta = progress - lastEmittedProgress;
+            const shouldEmit = (processedFiles % matchEmitInterval === 0) || (processedFiles === totalFiles) || (progressDelta >= 0.01);
+
+            if (shouldEmit) {
+                sendSSE('progress', {
+                    progress,
+                    current: processedFiles,
+                    total: totalFiles,
+                    status: `Matching images (${processedFiles}/${totalFiles})`,
+                    message: 'Processing image matching...'
+                });
+                lastEmittedProgress = progress;
+            }
         }
 
         /*
          * STEP 5 — Clean URLs (30% → 100%)
+         * - Batch nouns for cleanUrls and throttle emits
          */
         const cleanedResults = [];
         const totalNouns = allNouns.length;
         let processedNouns = 0;
+        const nounBatchSize = 50;
+        let lastEmittedProgressNouns = 0;
 
-        for (const noun of allNouns) {
-            const result = await cleanUrls(processedNames, [noun], bucket);
+        for (let j = 0; j < totalNouns; j += nounBatchSize) {
+            const nounBatch = allNouns.slice(j, j + nounBatchSize);
+            const result = await cleanUrls(processedNames, nounBatch, bucket);
             cleanedResults.push(...result);
 
-            processedNouns++;
+            processedNouns += nounBatch.length;
 
-            const executionProgress = totalNouns > 0
-                ? processedNouns / totalNouns
-                : 1;
-
+            const executionProgress = totalNouns > 0 ? processedNouns / totalNouns : 1;
             progress = 0.6 + (executionProgress * 0.4);
 
-            sendSSE('progress', {
-                progress,
-                current: processedNouns,
-                total: totalNouns,
-                status: `Cleaning URLs (${processedNouns}/${totalNouns})`,
-                message: 'Validating noun image URLs...'
-            });
+            const progressDelta = progress - lastEmittedProgressNouns;
+            const shouldEmitN = (processedNouns % Math.max(1, Math.floor(totalNouns / 100)) === 0) || (processedNouns === totalNouns) || (progressDelta >= 0.01);
+
+            if (shouldEmitN) {
+                sendSSE('progress', {
+                    progress,
+                    current: processedNouns,
+                    total: totalNouns,
+                    status: `Cleaning URLs (${processedNouns}/${totalNouns})`,
+                    message: 'Validating noun image URLs...'
+                });
+                lastEmittedProgressNouns = progress;
+            }
         }
 
         /*
@@ -374,15 +406,19 @@ exports.nounImaging = async (req, res) => {
             }
         });
 
+        clearInterval(heartbeatInterval);
         res.end();
 
     } catch (err) {
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
+        // Ensure the error event is flushed immediately
         res.write(`event: error\n`);
         res.write(`data: ${JSON.stringify({
             progress: 0,
             status: 'Error during noun imaging',
             message: err.message
         })}\n\n`);
+        if (res.flush) res.flush();
         res.end();
     }
 };
