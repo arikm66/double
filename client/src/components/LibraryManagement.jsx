@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 
 const EMOJI_POOL = ['🍎','🐶','🚗','🍌','🐘','🏠','✈️','🧸','⚽','🐱','🐦','🐟','🪑','🛋️','🛏️','🥤','🥄','👟','🎩','📚','⏰','📱','🌳','🌸','🎸','🧢','🥛','🍪','🐷','🐮','🐑','🚆','🚚','🚲','🚤','🚪','🪟','🖊️','✏️','🍏','🍊','🍇','🎂','🍕','📷','💻','🎈','⭐','🌙','☀️','🌧️','🍃','🦋','🪨','🔑','🔒','🗺️','👞','👓','🕰️','📸','🍾','🍴','🔪','☂️']
 
-export default function WordPacks() {
+export default function LibraryManagement() {
   const auth = useAuth()
   const [categories, setCategories] = useState([])
   const [loadingCategories, setLoadingCategories] = useState(false)
@@ -80,6 +80,7 @@ export default function WordPacks() {
       setDeletingId(null)
     }
   }
+
   return (
     <div className="w-full bg-accent-sand min-h-screen py-12">
       <div className="w-full">

@@ -25,7 +25,7 @@ export default function AppNavbar() {
     ? [
         'Dashboard',
         'New Session',
-        'Word Packs',
+        'Library Management',
         ...(auth.user.role === 'therapist' || auth.user.role === 'admin' ? ['Progress Logs'] : []),
         ...(auth.user.role === 'admin' ? ['Admin Panel'] : [])
       ]
@@ -37,7 +37,7 @@ export default function AppNavbar() {
   }, [auth.user])
 
   const routeForLabel = (label) => {
-    if (label === 'Word Packs') return '/word-packs'
+    if (label === 'Library Management') return '/lib-mgmt'
     if (label === 'Dashboard') return '/'
     if (label === 'Home') return '/'
     return null

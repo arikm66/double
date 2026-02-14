@@ -3,7 +3,7 @@ import AppNavbar from './components/Navbar'
 import Home from './routes/Home'
 import LoginModal from './components/LoginModal'
 import Footer from './components/Footer'
-import WordPacks from './components/WordPacks'
+import LibraryManagement from './components/LibraryManagement'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 export default function App() {
@@ -15,7 +15,7 @@ export default function App() {
       <main className="w-full min-h-screen px-6">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/word-packs" element={<WordPacks />} />
+          <Route path="/lib-mgmt" element={<LibraryManagement />} />
         </Routes>
       </main>
 
