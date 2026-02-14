@@ -11,17 +11,17 @@ export default function Home() {
       <div className="w-full">
         {/* Hero */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-6">
+          <div className="space-y-6 text-center">
             <h1 className="text-4xl md:text-5xl font-extrabold text-[#1d3557]">
               Making Speech Therapy <span className="text-deep-ocean">Playful.</span>
             </h1>
-            <p className="text-lg text-[#1d3557] opacity-90">{tagline}</p>
-            <div>
+            <p className="text-lg md:text-xl text-[#1d3557] opacity-90 mx-auto max-w-2xl">{tagline}</p>
+            <div className="flex justify-center">
               <Button radius="full" size="lg" color="primary" className="shadow-lg">Start Therapy Session</Button>
             </div>
           </div>
 
-          <div className="flex justify-center md:justify-end">
+          <div className="flex justify-center">
             <Card className="w-64 h-64 rounded-full border-8 border-primary-mint bg-white flex items-center justify-center text-6xl shadow-md motion-safe:animate-float motion-reduce:animate-none manual-float">
               🐘
             </Card>
