@@ -52,7 +52,7 @@ export default function AppNavbar() {
         ))}
       </NavbarContent>
 
-      <NavbarContent justify="end" className="!gap-2 px-6">
+      <NavbarContent justify="end" className="gap-2! px-6">
         <NavbarItem>
           <Link href="#" color="foreground">Login</Link>
         </NavbarItem>
