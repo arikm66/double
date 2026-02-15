@@ -71,7 +71,14 @@ export default function AppNavbar() {
       isMenuOpen={menuOpen} 
       onMenuOpenChange={setMenuOpen}
     >
-      <NavbarBrand className="px-4">
+      <NavbarBrand
+        className="px-4 cursor-pointer"
+        role="button"
+        tabIndex={0}
+        title="Go to dashboard"
+        onClick={() => { setActive('Dashboard'); navigate('/') }}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActive('Dashboard'); navigate('/'); } }}
+      >
         <DoubleLogo />
       </NavbarBrand>
 
