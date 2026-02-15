@@ -22,7 +22,7 @@ export default function Home() {
           </div>
 
           <div className="flex justify-center">
-            <Card className="w-64 h-64 rounded-full border-8 border-primary-mint bg-white flex items-center justify-center text-6xl shadow-md motion-safe:animate-float motion-reduce:animate-none manual-float">
+            <Card className="w-64 h-64 rounded-full border-8 border-slate-200 bg-white flex items-center justify-center text-6xl shadow-md motion-safe:animate-float motion-reduce:animate-none manual-float">
               🐘
             </Card>
           </div>

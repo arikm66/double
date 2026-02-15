@@ -1,6 +1,6 @@
 import React from 'react'
 import AppNavbar from './components/Navbar'
-import Home from './routes/Home'
+import Home from './components/Home'
 import LoginModal from './components/LoginModal'
 import Footer from './components/Footer'
 import LibraryManagement from './components/LibraryManagement/LibraryManagement'
