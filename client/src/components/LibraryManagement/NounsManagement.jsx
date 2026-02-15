@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { Card, Button } from '@heroui/react'
 
 export default function NounsManagement(props) {
@@ -17,16 +17,30 @@ export default function NounsManagement(props) {
     pickEmoji
   } = props
 
+  const inputRef = useRef(null)
+
   return (
     <>
       <aside className="w-full lg:w-72 rounded-2xl overflow-hidden shadow-sm bg-[#1d3557] text-white p-4 flex flex-col lg:h-[calc(100vh-6rem)]">
-        <div className="mb-4">
+        <div className="mb-4 relative">
           <input
-            className="w-full rounded-md px-3 py-2 text-sm bg-[#153147] placeholder-slate-300"
+            ref={inputRef}
+            className="w-full rounded-md px-3 py-2 pr-9 text-sm bg-[#153147] placeholder-slate-300"
             placeholder="Search categories..."
             value={query}
             onChange={e => setQuery(e.target.value)}
+            aria-label="Search categories"
           />
+          {query && (
+            <button
+              type="button"
+              onClick={() => { setQuery(''); inputRef.current?.focus(); }}
+              aria-label="Clear search"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-lg leading-none text-slate-300 hover:text-white"
+            >
+              ×
+            </button>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-2">
