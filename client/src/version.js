@@ -1,3 +1,3 @@
 // Auto-generated version file. Do not edit manually.
 // This file is updated by the git pre-commit hook to expose the version from package.json
-export const VERSION = "0.26.0";
+export const VERSION = "0.27.0";

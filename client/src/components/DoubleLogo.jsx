@@ -1,4 +1,5 @@
 import React from "react";
+import { VERSION } from '../version' 
 
 const DoubleLogo = () => {
   return (
@@ -30,9 +31,10 @@ const DoubleLogo = () => {
         <h1 className="text-[#1d3557] font-black text-2xl tracking-tight leading-none uppercase">
           Double
         </h1>
-        <span className="text-[#457b9d] text-[10px] font-bold tracking-[0.2em] uppercase mt-1">
-          Spot It!
-        </span>
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-[#457b9d] text-[10px] font-bold tracking-[0.2em] uppercase">Spot It!</span>
+          <span className="text-[10px] text-slate-400 font-semibold select-none">v{VERSION}</span>
+        </div>
       </div>
     </div>
   );
